@@ -3,7 +3,7 @@ Script to calculate SARI score of Neural Machine Translation model.
 
 ### Setup
 ```
-Clone the 'sockeye-recipes' repo
+Clone the 'sockeye-recipes' repository
 cd SARI/
 ```
 
