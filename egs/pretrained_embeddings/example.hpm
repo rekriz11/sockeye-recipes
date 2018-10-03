@@ -35,9 +35,9 @@
 #####################################################################
 
 ### User-specified directories ###
-workdir=/exp/kduh/sockeye-tutorial/de-en/ted
+workdir=./
 modeldir=$workdir/example
-rootdir=/home/hltcoe/kduh/src/mt/sockeye-recipes
+rootdir=../..
 # DESCRIPTION: rs1: RNN-based seq2seq model, Small
 
 ### Language pair (source and target) ###
@@ -50,11 +50,11 @@ trg=en
 # Note we assume tokenization is already done, and will only run BPE
 # For tokenization and other preprocessing, see preprocess-tokenize.sh
 # which does not use this hyperparam.txt file
-train_tok=__TRAIN_TOK__
-valid_tok=__VALID_TOK__
+train_tok=./sample-de-en/train
+valid_tok=./sample-de-en/valid
 
-embeddings_src=__SRC_EMB__
-embeddings_trg=__TRG_EMB__
+embeddings_src=./sample-de-en/emb/small.cln.de.vec
+embeddings_trg=./sample-de-en/emb/small.cln.en.vec
 
 #####################################################################
 # (1) preprocess-bpe.sh settings (modify if needed)                 #
@@ -63,16 +63,16 @@ embeddings_trg=__TRG_EMB__
 ### Number of symbols to use for BPE ###
 # Note: we perform source and target BPE separately
 # This corresponds to initial source (src) and target (trg) vocab size
-bpe_symbols_src=30000
-bpe_symbols_trg=30000
+bpe_symbols_src=4000
+bpe_symbols_trg=4000
 
 ### Filename for BPE-processed bitext file ###
 # Note: the following default names should be fine for most use cases
-datadir=/exp/scale18/mt/data/de-en/ted/
-train_bpe_src=$datadir/ted.train.bpe.$src
-valid_bpe_src=$datadir/ted.dev.bpe.$src
-train_bpe_trg=$datadir/ted.train.bpe.$trg
-valid_bpe_trg=$datadir/ted.dev.bpe.$trg
+datadir=$workdir/data-bpe/
+train_bpe_src=$datadir/train.bpe-${bpe_symbols_src}.$src
+valid_bpe_src=$datadir/valid.bpe-${bpe_symbols_src}.$src
+train_bpe_trg=$datadir/train.bpe-${bpe_symbols_trg}.$trg
+valid_bpe_trg=$datadir/valid.bpe-${bpe_symbols_trg}.$trg
 
 ### Filename for BPE vocabulary ###
 # Note: the following default names should be fine for most use cases
@@ -86,8 +86,8 @@ bpe_vocab_trg=${train_bpe_trg}.bpe_vocab
 #####################################################################
 
 # Model architecture
-num_embed="512:512"
-rnn_num_hidden=512
+num_embed="64:64"
+rnn_num_hidden=64
 rnn_attention_type="dot"
 num_layers=1
 rnn_cell_type="lstm"
@@ -96,7 +96,7 @@ rnn_cell_type="lstm"
 embed_dropout=".0:.0"
 rnn_dropout_inputs=".0:.0"
 rnn_dropout_states=".0:.0"
-label_smoothing=0.1
+label_smoothing=0.0
 
 # Vocabulary
 num_words="${bpe_symbols_src}:${bpe_symbols_trg}"
@@ -112,10 +112,10 @@ loss="cross-entropy"
 seed=13
 
 # Logging and stopping condition
-checkpoint_frequency=4000
+checkpoint_frequency=20
 min_num_epochs=0
-max_num_epochs=100
-max_updates=500000
-keep_last_params=5
-decode_and_evaluate=-1
+max_num_epochs=2
+max_updates=5000
+keep_last_params=-1
+decode_and_evaluate=0
 
