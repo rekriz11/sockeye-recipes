@@ -85,14 +85,14 @@ If you find that your pre-trained embedding vocabularies are especially large, y
 As an example, our pre-trained embeddings (the ones in `sample-de-en/emb`) came from the TED de-en corpus and had a larger vocabulary than the bitext vocabulary. They were filtered using the following steps:
 
 ```bash
-$ python $SOCKEYE_RECIPES/scripts/util/create_small_emb.py \
+$ python3 $SOCKEYE_RECIPES/scripts/util/create_small_emb.py \
   $SRC_EMBEDDING_FILE \
   $modeldir/vocab.src.0.json \
   sample-de-en/emb/small.cln.de.vec
 Words in out (bitext) vocab : 12815
 Words retained : 8962
 
-$ python $SOCKEYE_RECIPES/scripts/util/create_small_emb.py \
+$ python3 $SOCKEYE_RECIPES/scripts/util/create_small_emb.py \
   $TGT_EMBEDDING_FILE \
   $modeldir/vocab.tgt.0.json \
   sample-de-en/emb/small.cln.en.vec
@@ -105,13 +105,13 @@ Words retained : 6571
 First, we'll convert the pre-trained embeddings (Fasttext, in this case) to `npy` objects and their vocabularies to the JSON format so that sockeye can ingest them. The following steps will do this
 
 ```bash
-$ python $SOCKEYE_RECIPES/scripts/util/vec2npy.py \
+$ python3 $SOCKEYE_RECIPES/scripts/util/vec2npy.py \
   sample-de-en/emb/small.cln.de.vec \
   sample-de-en/emb/small.cln.de.vec
 Rescaled mean of emb matrix (per feature) from -0.004608003 to 8.183625e-11
 Shape of emb matrix = (8962, 512)
 
-$ python $SOCKEYE_RECIPES/scripts/util/vec2npy.py \
+$ python3 $SOCKEYE_RECIPES/scripts/util/vec2npy.py \
   sample-de-en/emb/small.cln.en.vec \
   sample-de-en/emb/small.cln.en.vec
 Rescaled mean of emb matrix (per feature) from 0.0057422775 to -4.5354318e-11
