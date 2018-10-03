@@ -89,24 +89,24 @@ bpe_vocab_trg=${train_bpe_trg}.bpe_vocab
 num_embed="300:300"
 rnn_num_hidden=256
 rnn_attention_type="dot"
-num_layers=4
+num_layers=2
 rnn_cell_type="lstm"
 
 # Regularization
-embed_dropout=".1:.1"
+embed_dropout=".0:.0"
 rnn_dropout_inputs=".2:.2"
 rnn_dropout_states=".2:.2"
-label_smoothing=0.1
+label_smoothing=0
 
 # Vocabulary
 num_words="${bpe_symbols_src}:${bpe_symbols_trg}"
-word_min_count="1:1"
-max_seq_len="50:50"
+word_min_count="3:3"
+max_seq_len="85:85"
 
 # Training configuration
-batch_size=4096
+batch_size=32
 optimizer=adam
-initial_learning_rate=0.0002
+initial_learning_rate=0.001
 learning_rate_reduce_factor=0.7
 loss="cross-entropy"
 seed=13
@@ -114,7 +114,7 @@ seed=13
 # Logging and stopping condition
 checkpoint_frequency=4000
 min_num_epochs=0
-max_num_epochs=100
+max_num_epochs=30
 max_updates=500000
 keep_last_params=5
 decode_and_evaluate=-1
