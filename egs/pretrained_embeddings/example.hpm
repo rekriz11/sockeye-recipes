@@ -86,7 +86,7 @@ bpe_vocab_trg=${train_bpe_trg}.bpe_vocab
 #####################################################################
 
 # Model architecture
-num_embed="64:64"
+num_embed="300:300"
 rnn_num_hidden=64
 rnn_attention_type="dot"
 num_layers=1
