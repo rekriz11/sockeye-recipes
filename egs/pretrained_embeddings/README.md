@@ -40,6 +40,22 @@ This will create the `sample-de-en` folder with the some data for training and v
 In addition, you will notice a folder named `emb`. This contains some pre-trained embeddings for German and English which we will use to initialize this NMT model.
 Note: The training data is a small subset of the Europarl corpus and the pre-trained embeddings come from the TED de-en corpus (so, expect vocab mismatch).
 
+### Step 0b: Setup environment (note that this is specific to UPenn tesla machine)
+```
+mkdir -p sample-de-en/emb
+mkdir model_dir
+
+export SOCKEYE_RECIPES=$HOME/sockeye-recipes
+export modeldir=$SOCKEYE_RECIPES/egs/pretrained_embeddings/model_dir
+export train_src=sample-de-en/train.de
+export train_trg=sample-de-en/train.en
+
+export SRC_EMBEDDING_DIR=/data1/embeddings/deu/
+export TGT_EMBEDDING_DIR=/data1/embeddings/eng/
+export SRC_EMBEDDING_FILE=$SRC_EMBEDDING_DIR/cc.de.300.vec
+export TGT_EMBEDDING_FILE=$TGT_EMBEDDING_DIR/glove.6B.300d.txt
+```
+
 ### Step 1: Create a bitext vocab
 
 We only really care about embeddings of words which are in our bitext. To filter and initialize embeddings, we will first extract the source and target vocabs from the bitext
@@ -70,15 +86,15 @@ As an example, our pre-trained embeddings (the ones in `sample-de-en/emb`) came 
 
 ```bash
 $ python $SOCKEYE_RECIPES/scripts/util/create_small_emb.py \
-  ~/gkumar/data/scale/pretrained_emb/fasttext/de-en/ted/train.cln.de.model.vec \
+  $SRC_EMBEDDING_FILE \
   $modeldir/vocab.src.0.json \
   sample-de-en/emb/small.cln.de.vec
 Words in out (bitext) vocab : 12815
 Words retained : 8962
 
 $ python $SOCKEYE_RECIPES/scripts/util/create_small_emb.py \
-  ~/gkumar/data/scale/pretrained_emb/fasttext/de-en/ted/train.cln.en.model.vec \
-  $modeldir/tiny_rnn/vocab.tgt.0.json \
+  $TGT_EMBEDDING_FILE \
+  $modeldir/vocab.tgt.0.json \
   sample-de-en/emb/small.cln.en.vec
 Words in out (bitext) vocab : 7764
 Words retained : 6571
