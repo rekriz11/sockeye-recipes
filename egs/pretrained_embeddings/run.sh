@@ -4,7 +4,10 @@ echo "0. Copying data and embeddings ... Note that you need to request Newsela d
 mkdir -p data/newsela_Zhang_Lapata_splits data/emb
 #cp /data1/reno/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.* data/newsela_Zhang_Lapata_splits
 cp /data2/text_simplification/dataset/test/* /data2/text_simplification/dataset/train/* /data2/text_simplification/dataset/valid/* data/newsela_Zhang_Lapata_splits
-cp /data1/embeddings/eng/glove.6B.300d.txt data/emb/glove.6B.300d.txt
+#cp /data1/embeddings/eng/glove.6B.300d.txt data/emb/glove.6B.300d.txt
+# NOTE: we don't want to copy embeddings, instead we make a sim link.
+rm data/emb/glove.6B.300d.txt
+ln -s /data1/embeddings/eng/glove.6B.300d.txt data/emb/glove.6B.300d.txt
 
 hyperparam_file=anon_glove_zhanglapata.hpm
 source $hyperparam_file
