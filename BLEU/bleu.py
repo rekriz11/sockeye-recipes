@@ -1,4 +1,4 @@
-from nltk.translate.bleu_score import corpus_bleu
+from nltk.translate.bleu_score import corpus_bleu, sentence_bleu
 import numpy as np
 from argparse import ArgumentParser
 import warnings
@@ -26,7 +26,7 @@ def main():
 
     bleu_scores = list()
     for i in range(len(simplified_sentences)):
-        bleu_scores.append(corpus_bleu([reference_sentences[i]], [simplified_sentences[i]], weights=(1, 0, 0, 0)))
+        bleu_scores.append(sentence_bleu([reference_sentences[i]], simplified_sentences[i], weights=(0.25, 0.25, 0.25, 0.25)))
 
     bleu_scores = np.array(bleu_scores)
     print('BLEU score: {}'.format(np.mean(bleu_scores)))
