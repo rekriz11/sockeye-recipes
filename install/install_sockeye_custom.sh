@@ -77,7 +77,7 @@ export PYTHONNOUSERSITE=1
 # 2. clone sockeye NMT as submodule and install
 cd $SOCKEYE
 if [[ "$DEVICE" == "gpu" ]]; then
-  pip install -r requirements.gpu-cu90.txt
+  pip install -r requirements.gpu-cu91.txt
 elif [[ "$DEVICE" == "cpu" ]]; then
   pip install -r requirements.txt
 else
