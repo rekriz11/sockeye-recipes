@@ -1,0 +1,62 @@
+#### Running sockeye pretrained embeddings on tesla ####
+
+source activate sockeye_gpu
+cd ~/sockeye-recipes/egs/pretrained_embeddings
+
+## Training:
+./run.sh
+
+## Translate:
+bash ~/sockeye-recipes/scripts/translate.sh -p anon_glove_zhanglapata.hpm -i data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.src.aner -o output/bpe.1best_greedy -e sockeye_gpu -b 1
+
+bash ~/sockeye-recipes/scripts/translate.sh -p anon_glove_zhanglapata.hpm -i data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.src.aner -o output/bpe.1best_5beam -e sockeye_gpu -b 5
+
+bash ~/sockeye-recipes/scripts/translate.sh -p anon_glove_zhanglapata.hpm -i data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.src.aner -o output/bpe.1best_10beam -e sockeye_gpu -b 10
+
+
+## Evaluate BLEU:
+python ~/sockeye-recipes/BLEU/bleu.py \
+-r data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.src.aner \
+-s data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.dst.aner
+
+python ~/sockeye-recipes/BLEU/bleu.py \
+-r data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.src.aner \
+-s output/bpe.1best_greedy
+
+python ~/sockeye-recipes/BLEU/bleu.py \
+-r data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.dst.aner \
+-s output/bpe.1best_greedy
+
+python ~/sockeye-recipes/BLEU/bleu.py \
+-r data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.src.aner \
+-s output/bpe.1best_5beam
+
+python ~/sockeye-recipes/BLEU/bleu.py \
+-r data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.dst.aner \
+-s output/bpe.1best_5beam
+
+python ~/sockeye-recipes/BLEU/bleu.py \
+-r data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.src.aner \
+-s output/bpe.1best_10beam
+
+python ~/sockeye-recipes/BLEU/bleu.py \
+-r data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.dst.aner \
+-s output/bpe.1best_10beam
+
+
+## Evaluate SARI:
+
+python ~/sockeye-recipes/SARI/sari.py \
+-c data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.src.aner \
+-r data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.dst.aner \
+-s output/bpe.1best_greedy
+
+python ~/sockeye-recipes/SARI/sari.py \
+-c data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.src.aner \
+-r data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.dst.aner \
+-s output/bpe.1best_5beam
+
+python ~/sockeye-recipes/SARI/sari.py \
+-c data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.src.aner \
+-r data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.dst.aner \
+-s output/bpe.1best_10beam
