@@ -1,0 +1,19 @@
+#############################################
+## To print out all sentences from the beam
+#############################################
+
+## Translates and stores beam histories
+bash ~/sockeye-recipes/scripts/translate.sh \
+-p anon_glove_tokens.hpm \
+-i data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.src.aner \
+-o output/tokens.history_5beam \
+-e sockeye_gpu \
+-b 5 \
+-t beam_store \
+-s
+
+## Converts beam histories to graph, and prints the sorted list of all completed paths
+## for each input sentence
+python3 ~/sockeye-recipes/new_scripts/print_nbest/print_nbest.py \
+-d ~/sockeye-recipes/egs/pretrained_embeddings/output/tokens.history_5beam \
+-o ~/sockeye-recipes/egs/pretrained_embeddings/output/tokens.5best

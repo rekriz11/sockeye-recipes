@@ -23,17 +23,11 @@ function check_file_exists() {
   fi
 }
 
-BEAM_SIZE=1
-
-while getopts ":h?p:e:i:o:d:b:t:s" opt; do
+while getopts ":h?p:e:i:o:d:s" opt; do
   case "$opt" in
     h|\?)
       show_help
       exit 0
-      ;;
-    b) BEAM_SIZE=$OPTARG
-      ;;
-    t) OUTPUT_TYPE=$OPTARG
       ;;
     p) HYP_FILE=$OPTARG
       ;;
@@ -71,9 +65,9 @@ source $rootdir/scripts/get-device.sh $DEVICE ""
 # (1) Book-keeping
 LOG_FILE=${OUTPUT_FILE}.log
 datenow=`date '+%Y-%m-%d %H:%M:%S'`
-echo "Start translating: $datenow on $(hostname)"
-echo "$0 $@"
-echo "$devicelog"
+echo "Start translating: $datenow on $(hostname)" > $LOG_FILE
+echo "$0 $@" >> $LOG_FILE
+echo "$devicelog" >> $LOG_FILE
 
 ###########################################
 # (2) Translate!
@@ -82,29 +76,23 @@ max_input_len=100
 
 if [ "$SKIP_SRC_BPE" == 1 ]; then
     ### Run Sockeye.translate, then de-BPE:
-    echo "Directly translating source input without applying BPE"
+    echo "Directly translating source input without applying BPE" >> $LOG_FILE
     cat $INPUT_FILE | \
 	python -m sockeye.translate --models $modeldir $device \
 	--disable-device-locking \
-	--beam-size $BEAM_SIZE \
-  --max-input-len $max_input_len \
-  --output-type $OUTPUT_TYPE | \
+	--max-input-len $max_input_len 2>> $LOG_FILE | \
 	sed -r 's/@@( |$)//g' > $OUTPUT_FILE 
 else
     ### Apply BPE to input, run Sockeye.translate, then de-BPE ###
-    echo "Apply BPE to source input"
-    python $subword/apply_bpe.py --input $INPUT_FILE --codes $bpe_vocab_src > .tmp.js
-    cat .tmp.js | \
+    echo "Apply BPE to source input" >> $LOG_FILE
+    python $subword/apply_bpe.py --input $INPUT_FILE --codes $bpe_vocab_src | \
 	python -m sockeye.translate --models $modeldir $device \
 	--disable-device-locking \
-  --beam-size $BEAM_SIZE \
-	--max-input-len $max_input_len \
-  --output-type $OUTPUT_TYPE | \
+	--max-input-len $max_input_len 2>> $LOG_FILE | \
 	sed -r 's/@@( |$)//g' > $OUTPUT_FILE
-    rm .tmp.js
 fi
 
 ##########################################
 datenow=`date '+%Y-%m-%d %H:%M:%S'`
-echo "End translating: $datenow on $(hostname)"
-echo "==========================================="
+echo "End translating: $datenow on $(hostname)" >> $LOG_FILE
+echo "===========================================" >> $LOG_FILE
