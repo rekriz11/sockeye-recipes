@@ -68,18 +68,24 @@ check_dir_exists $SOCKEYE
 venv=$ENV_NAME # set your virtual enviroment name
 if [[ "$FORCE_NEW_ENV" == true || ! -d $CONDA_HOME/$ENV_NAME ]]; then
   errcho "Creating new Conda env : $ENV_NAME"
-  conda create -y -n $venv python=3
+  conda create -y -n $venv python=3.6
 fi
 
 source activate $venv
 export PYTHONNOUSERSITE=1
 
+# 1.5. upgrade pip to remove warning
+pip install --upgrade pip
+#pip install mxnet-mkl
+pip install numpy==1.14.6
+
+
 # 2. clone sockeye NMT as submodule and install
 cd $SOCKEYE
 if [[ "$DEVICE" == "gpu" ]]; then
-  pip install -r requirements.gpu-cu91.txt
+  pip install -r requirements/requirements.gpu-cu91.txt
 elif [[ "$DEVICE" == "cpu" ]]; then
-  pip install -r requirements.txt
+  pip install -r requirements/requirements.txt
 else
   errcho "Invalid device name; must be one of cpu or gpu"
   exit 1
@@ -87,6 +93,7 @@ fi
 pip install . --no-deps
 
 # 3. install optional dependencies
+pip install numpy==1.14.6
 pip install mxboard
 pip install tensorboard tensorflow
 pip install matplotlib

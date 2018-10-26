@@ -1,0 +1,10 @@
+## Installing updated sockeye package:
+cd ~/sockeye-recipes
+
+conda remove --name sockeye_gpu --all
+~/sockeye-recipes/install/install_sockeye_custom.sh -s ~/sockeye-recipes/sockeye -e sockeye_gpu
+
+## Training
+
+cd ~/sockeye-recipes/egs/pretrained_embeddings/
+./run_loss_TEST.sh
