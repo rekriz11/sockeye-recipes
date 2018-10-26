@@ -1,6 +1,6 @@
 #!/bin/bash
 # Install a custom version of sockeye in a conda environment
-# CUDA 9.0
+# CUDA 8.0
 
 set -e
 
@@ -83,7 +83,7 @@ pip install numpy==1.14.6
 # 2. clone sockeye NMT as submodule and install
 cd $SOCKEYE
 if [[ "$DEVICE" == "gpu" ]]; then
-  pip install -r requirements/requirements.gpu-cu91.txt
+  pip install -r requirements/requirements.gpu-cu80.txt
 elif [[ "$DEVICE" == "cpu" ]]; then
   pip install -r requirements/requirements.txt
 else
