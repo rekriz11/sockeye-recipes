@@ -9,8 +9,8 @@ bash ~/sockeye-recipes/scripts/translate.sh \
 -o output/tokens.history_5beam \
 -e sockeye_gpu \
 -b 5 \
--t beam_store \
--s
+-s \
+-t beam_store
 
 ## Converts beam histories to graph, and prints the sorted list of all completed paths
 ## for each input sentence
