@@ -93,15 +93,13 @@ if [ "$SKIP_SRC_BPE" == 1 ]; then
 else
     ### Apply BPE to input, run Sockeye.translate, then de-BPE ###
     echo "Apply BPE to source input"
-    python $subword/apply_bpe.py --input $INPUT_FILE --codes $bpe_vocab_src > .tmp.js
-    cat .tmp.js | \
+    python $subword/apply_bpe.py --input $INPUT_FILE --codes $bpe_vocab_src | \
 	python -m sockeye.translate --models $modeldir $device \
 	--disable-device-locking \
   --beam-size $BEAM_SIZE \
 	--max-input-len $max_input_len \
   --output-type $OUTPUT_TYPE | \
 	sed -r 's/@@( |$)//g' > $OUTPUT_FILE
-    rm .tmp.js
 fi
 
 ##########################################
