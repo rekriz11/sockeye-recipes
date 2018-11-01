@@ -7,7 +7,7 @@ bash ~/sockeye-recipes/scripts/translate.sh \
 -p anon_glove_tokens.hpm \
 -i data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.src.aner \
 -o output/tokens.history_5beam \
--e sockeye_gpu \
+-e sockeye_gpu_57 \
 -b 5 \
 -s \
 -t beam_store

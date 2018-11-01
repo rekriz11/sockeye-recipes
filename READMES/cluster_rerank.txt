@@ -1,0 +1,27 @@
+#############################################
+## To print out all sentences from the beam
+#############################################
+
+## Translates and stores beam histories
+bash ~/sockeye-recipes/scripts/translate.sh \
+-p anon_glove_tokens.hpm \
+-i data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.src.aner \
+-o output/tokens.history_400beam \
+-e sockeye_gpu_57 \
+-b 400 \
+-s \
+-t beam_store
+
+## Converts beam histories to graph, and prints the sorted list of all completed paths
+## for each input sentence
+python3 ~/sockeye-recipes/new_scripts/print_nbest/print_nbest.py \
+-d ~/sockeye-recipes/egs/pretrained_embeddings/output/tokens.history_400beam \
+-o ~/sockeye-recipes/egs/pretrained_embeddings/output/tokens.400best
+
+## Clusters and reranks the output of the beam
+python cluster_rerank.py \
+/data2/text_simplification/embeddings/enwiki_dbow/doc2vec.bin \
+~/sockeye-recipes/egs/pretrained_embeddings/output/tokens.400best
+20
+~/sockeye-recipes/egs/pretrained_embeddings/output/tokens.400beam.20clusters
+

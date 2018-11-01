@@ -1,12 +1,32 @@
 import spacy
 nlp = spacy.load('en')
 import sys
+import random
+
+bad_chars = ["'", '"', "-", "!", "@", "#", "$", "%", "^", "&" , "*", "(", ")", \
+             "_", "+", "=", ",", "", ".", "?", "/", "\\", "~", "`", "{", "[", \
+             "}", "]", "|", ":", ";"]
+
+def contains_bad(token):
+    for b in bad_chars:
+        if b in token:
+            return True
+    return False
 
 ## Performs tokenization and named-entity recognition on a sentence
 def parse_sentence(sentence):
     doc = nlp(sentence)
     data = []
-    data.append([X.text for X in doc])
+    tokens = [X.text for X in doc]
+    for i in range(len(tokens)):
+        if tokens[i] == "''":
+            tokens[i] = '"'
+        elif tokens[i].lower() == "-rrb-":
+            tokens[i] = ")"
+        elif tokens[i].lower() == "-lrb-":
+            tokens[i] = "("
+        
+    data.append(tokens)
     data.append([X.ent_iob_ for X in doc])
     data.append([X.ent_type_ for X in doc])
 
@@ -14,7 +34,32 @@ def parse_sentence(sentence):
 
 ## Performs only tokenization
 def tokenize(text):
-    return [tok.text for tok in nlp.tokenizer(text)]
+    tokens = [tok.text for tok in nlp.tokenizer(text)]
+    for i in range(len(tokens)):
+        if tokens[i] == "''":
+            tokens[i] = '"'
+        elif tokens[i].lower() == "-rrb-":
+            tokens[i] = ")"
+        elif tokens[i].lower() == "-lrb-":
+            tokens[i] = "("
+    return tokens
+
+## Gets index of start of sublist in list, if sublist is found
+def is_sublist(list1, list2):
+    found = False
+    indices = []
+    for i in range(len(list2) - len(list1)):
+        for j in range(len(list1)):
+            if list1[j] != list2[i+j]:
+                found = False
+                indices = []
+                break
+            else:
+                indices.append(i+j)
+                found = True
+        if found:
+            return indices
+    return []
 
 ## Parses all sentences from a file 
 def get_sents(file):
@@ -45,76 +90,114 @@ def analyze_v2(newsela_file):
     with open(newsela_file, 'r', encoding='utf8') as f:
         for line in f:
             ls = line[:-1].split("\t")
-
             version_src = int(ls[0][1])
             version_tgt = int(ls[1][1])
             distribution[version_src, version_tgt] += 1
+
+    print(distribution)
+
+def analyze_v3(newsela_file):
+    distribution = dict()
+    for i in range(5):
+        for j in range(i+1, 5):
+            distribution[(i,j)] = 0
+            
+    with open(newsela_file, 'r', encoding='utf8') as f:
+        i = 0
+        for line in f:
+            if i > 0:
+                ls = line[:-1].split("\t")
+                version_src = int(ls[0][1])
+                version_tgt = int(ls[1][1])
+                distribution[version_src, version_tgt] += 1
+            i += 1
 
     print(distribution)
             
             
 
 ## Parses all sentences from Newsela version 2
-def get_v2_sents(newsela_file):
+def get_v3_sents(newsela_file):
     source_sents = []
     target_sents = []
 
+    orig_src = dict()
+    orig_tgt = dict()
+
     bads = 0
     with open(newsela_file, 'r', encoding='utf8') as f:
-        i = 1
+        i = 0
         for line in f:
             if i % 1000 == 0:
                 print(i)
 
-            if True:
-#            if i < 500:
-                ls = line[:-1].split("\t")
-                version_src = int(ls[0][1])
-                version_tgt = int(ls[1][1])
+#            if True:
+            if i < 1000:
+                if i > 0:
+                    ls = line[:-1].split("\t")
+                    version_src = int(ls[0][1])
+                    version_tgt = int(ls[1][1])
 
-                sent_src = ls[9]
-                sent_tgt = ls[10]
+                    sent_id = int(ls[9])
 
-                if version_tgt - version_src > 1 or version_src == 3:
-                    source_sents.append([parse_sentence(sent_src), i])
-                    target_sents.append([parse_sentence(sent_tgt), i])
-                else:
-                    bads += 1
+                    sent_src = ls[15]
+                    sent_tgt = ls[16]
+
+                    if version_tgt - version_src > 1 or version_src == 3:
+                        src_parse = parse_sentence(sent_src)
+                        tgt_parse = [tokenize(sent_tgt), [], []]
+                        source_sents.append([src_parse, sent_id])
+                        target_sents.append([tgt_parse, sent_id])
+
+                        if ls[10] == "N/A":
+                            orig_src[sent_id] = src_parse[0]
+                            orig_tgt[sent_id] = tgt_parse[0]
+                    else:
+                        bads += 1
             else:
                 break
 
             i += 1
     print(len(source_sents))
+    print(len(list(orig_src.keys())))
     print(bads)
-    return source_sents, target_sents
+    return source_sents, target_sents, orig_src, orig_tgt
             
-def get_train(source_sents, target_sents, valid_src, valid_tgt, test_src, test_tgt):
+def get_train(source_sents, target_sents, orig_src, orig_tgt, valid_src, valid_tgt, test_src, test_tgt):
     s_tokens = []
     t_tokens = []
 
     ## Gets all validation and test sentences (tokenized)
     for i in range(len(valid_src)):
-        s_tokens.append([s[0] for s in valid_src[i]])
-        t_tokens.append([s[0] for s in valid_tgt[i]])
+        s_tokens.append(valid_src[i][0])
+        t_tokens.append(valid_tgt[i][0])
 
     for i in range(len(test_src)):
-        s_tokens.append([s[0] for s in test_src[i]])
-        t_tokens.append([s[0] for s in test_tgt[i]])
+        s_tokens.append(test_src[i][0])
+        t_tokens.append(test_tgt[i][0])
+
+    print(s_tokens[0])
+    print(t_tokens[0])
 
     ## Keeps pair if not found in validation or test set
-    train_src = dict()
-    train_tgt = dict()
+    train_src = []
+    train_tgt = []
+
     bads = 0
     for i in range(len(source_sents)):
-        src_tokens = [s[0] for s in source_sents[i][0]]
-        tgt_tokens = [s[0] for s in target_sents[i][0]]
+        sent_id = source_sents[i][1]
 
-        if src_tokens not in s_tokens and tgt_tokens not in t_tokens:
-            train_src[source_sents[i][1]] = source_sents[i][0]
-            train_tgt[target_sents[i][1]] = target_sents[i][0]
+        if i == 0:
+            print(source_sents[i][0])
+            print(target_sents[i][0])
+
+        if orig_src[sent_id] not in s_tokens and orig_tgt[sent_id] not in t_tokens:
+            train_src.append(source_sents[i][0])
+            train_tgt.append(target_sents[i][0])
         else:
             bads += 1
 
+    print(len(train_src))
     print(bads)
     return train_src, train_tgt
 
@@ -122,78 +205,110 @@ def align_sentences(newsela_v3_file, train_src, train_tgt):
     train_src_v3 = []
     train_tgt_v3 = []
     bads = 0
+    bads2 = 0
     
     with open(newsela_v3_file, 'r', encoding='utf8') as f:
         c = 0
         for line in f:
-            if c % 10000 == 0:
+            if c % 100000 == 0:
                 print(c)
             c += 1
 
-            if c > 1:           
-                ls = line[:-1].split("\t")
-                sent_id = int(ls[9])
+            if True:
+#            if c < 10000:
+                if c > 1:
+                    ls = line[:-1].split("\t")
+                    sent_id = int(ls[9])
 
-                if ls[10] != "N/A":
-                    replaced_id_old = int(ls[11])
+                    if ls[10] != "N/A":
+                        replaced_id_old = int(ls[11])
 
-                    try:
-                        orig_src = train_src[sent_id]
-                        orig_tgt = train_tgt[sent_id]
+                        try:
+                            orig_src = list(train_src[sent_id])
+                            orig_tgt = list(train_tgt[sent_id])
 
-                        if ls[10] == "COMPLEX":
-                            ## Finds replaced id
-                            new_src = tokenize(ls[15])
-                            for i in range(len(new_src)):
-                                if new_src[i].lower() != orig_src[i].lower():
-                                    replaced_id = i
-                                    break
-                                
-                            replaced_word = ls[15][replaced_id]
-                            orig_src[0][replaced_id] = replaced_word
-                        else:
-                            ## Finds replaced id
-                            new_tgt = tokenize(ls[16])
-                            for i in range(len(new_tgt)):
-                                if new_tgt[i].lower() != orig_tgt[i].lower():
-                                    replaced_id = i
-                                    break
-                                
-                            replaced_word = ls[16][replaced_id]
-                            orig_tgt[0][replaced_id] = replaced_word
+                            if ls[10] == "COMPLEX":
+                                ## Finds replaced id
+                                new_src = tokenize(ls[15])
+                                if len(orig_src) == len(new_src):
+                                    for i in range(len(new_src)):
+                                        if new_src[i].lower() != orig_src[0][i].lower() \
+                                           and new_src[i] != "--" \
+                                           and len(new_src[i]) > 1:
+                                            replaced_id = i
+                                            break
 
-                        train_src_v3.append(orig_src)
-                        train_tgt_v3.append(orig_tgt)
-                    except KeyError:
-                        bads += 1
-                        continue
-                else:
-                    try:
-                        train_src_v3.append(train_src[sent_id])
-                        train_tgt_v3.append(train_tgt[sent_id])
-                    except KeyError:
-                        bads += 1
-                        continue
+                                    old_word = orig_src[0][replaced_id]
+                                    replaced_word = new_src[replaced_id]
+                                    orig_src[0][replaced_id] = replaced_word
 
-    print("\n")
+                                    if True:
+                                        print("COMPLEX: " + str(c))
+                                        print(replaced_word)
+                                        print(old_word)
+                                        print("\n")
+
+                                    train_src_v3.append(orig_src)
+                                    train_tgt_v3.append(orig_tgt)
+                                else:
+                                    bads2 += 1
+                            else:
+                                ## Finds replaced id
+                                new_tgt = tokenize(ls[16])
+                                if len(orig_tgt) == len(new_tgt):
+                                    for i in range(len(new_tgt)):
+                                        if new_tgt[i].lower() != orig_tgt[0][i].lower() \
+                                           and new_src[i] != "--" \
+                                           and len(new_src[i]) > 1:
+                                            replaced_id = i
+                                            break
+                                        
+                                    replaced_word = new_tgt[replaced_id]
+                                    orig_tgt[0][replaced_id] = replaced_word
+
+                                    if True:
+                                        print("SIMPLE: " + str(c))
+                                        print(replaced_word)
+                                        print(replaced_id)
+                                        print("\n")
+                                        
+                                    train_src_v3.append(orig_src)
+                                    train_tgt_v3.append(orig_tgt)
+                                else:
+                                    bads2 += 1
+                            
+                        except KeyError:
+                            bads += 1
+                            continue
+                    else:
+                        try:
+                            train_src_v3.append(train_src[sent_id])
+                            train_tgt_v3.append(train_tgt[sent_id])
+                        except KeyError:
+                            bads2 += 1
+                            continue
+            else:
+                break
+
     print(len(train_src_v3))
     print(bads)
+    print(bads2)
     return train_src_v3, train_tgt_v3
                         
 ## Saves non-anonymized sentences
 def save_original_data(data, output_file):
     with open(output_file, 'w', encoding='utf8') as f:
         for sent in data:
-            f.write(" ".join([s[0].lower() for s in sent]) + "\n")
+            f.write(" ".join(sent[0]) + "\n")
 
 ## Anonymizes sentences
 def anonymize_data(sents):
     anonymized_data = []
 
     for sent in sents:
-        ori_tokens = [s[0] for s in sent]
-        bio = [s[1] for s in sent]
-        types = [s[2] for s in sent]
+        ori_tokens = sent[0]
+        bio = sent[1]
+        types = sent[2]
 
         all_nes = []
         all_types = []
@@ -203,6 +318,9 @@ def anonymize_data(sents):
         current_type = ""
         for i in range(len(ori_tokens)):
             if bio[i] == "B":
+                if current_ne != []:
+                    all_nes.append(current_ne)
+                    all_types.append(current_type)
                 current_ne = [i]
                 current_type = types[i]
             elif bio[i] == "I":
@@ -252,22 +370,106 @@ def anonymize_data(sents):
         anonymized_data.append((anon_tokens, aner_dict))       
     return anonymized_data
 
-## Saves anonymized sentences and anonimization mappings
-def save_aner_data(anonymized_data, output_file, anon_file):
+## Anonymizes target sentences
+def anonymize_target_data(tgt_sents, src_aner):
+    anonymized_data = []
+
+    for i in range(len(tgt_sents)):
+        if i == 0:
+            print(tgt_sents[i])
+            print(tgt_sents[i][0])
+            print(src_aner[i][1])
+        ori_tokens = tgt_sents[i][0]
+
+        all_nes = []
+        all_types = []
+
+        ## Finds all named entities from complex sentence that
+        ## are also found in the simple sentence
+        for k,v in src_aner[i][1].items():
+            ner = v.split(" ")
+            indices = is_sublist(ner, ori_tokens)
+
+            if indices != []:
+                all_nes.append(indices)
+                all_types.append(k)
+
+        ## Makes anonymized dictionary for sentence
+        aner_dict = dict()
+        ne_starts_dict = dict()
+        for j in range(len(all_nes)):
+            anonymized = False
+            while not anonymized:
+                try:
+                    a = aner_dict[all_types[j]]
+                except KeyError:
+                    ne_starts_dict[all_nes[j][0]] = (all_nes[j], all_types[j])
+                    anonymized = True
+
+        if i == 0:
+            print(ori_tokens)
+            
+        ## Makes anonymized sentence
+        anon_tokens = []
+        j = 0
+        while j < len(ori_tokens):
+            if j not in ne_starts_dict.keys():
+                anon_tokens.append(ori_tokens[j])
+                j += 1
+            else:
+                ## Includes anonymized label
+                current_ne_label = ne_starts_dict[j][1]
+                anon_tokens.append(current_ne_label)
+
+                ## Skips over indices that are part of named entity
+                current_ne_indices = ne_starts_dict[j][0]
+                for k in current_ne_indices:
+                    j += 1
+
+        if i == 0:
+            print(anon_tokens)
+            print("\n")
+                    
+        anonymized_data.append(anon_tokens)       
+    return anonymized_data
+
+## Saves anonymized sentences and anonymization mappings
+def save_aner_data(anonymized_data, indices, output_file, anon_file):
     with open(output_file, 'w', encoding='utf8') as f:
-        for sent in anonymized_data:
-            f.write(" ".join([s.lower() for s in sent[0]]) + "\n")
+        for i in indices:
+            sent = []
+            for s in anonymized_data[i][0]:
+                if "@" not in s:
+                    sent.append(s.lower())
+                else:
+                    sent.append(s.upper())
+            f.write(" ".join(sent) + "\n")
 
     with open(anon_file, 'w', encoding='utf8') as f:
-        for sent in anonymized_data:
+        for i in range(indices):
             anons = []
-            for v,k in sent[1].items():
-                anons.append(v + "::" + k)
+            for v,k in anonymized_data[i][1].items():
+                anons.append(v.upper() + "::" + k)
             f.write("\t".join(anons) + "\n")
+
+## Saves anonymized target sentences
+def save_aner_tgt_data(anonymized_data, indices, output_file):
+    with open(output_file, 'w', encoding='utf8') as f:
+        for i in indices:
+            sent = []
+            for s in anonymized_data[i]:
+                if "@" not in s:
+                    sent.append(s.lower())
+                else:
+                    sent.append(s.upper())
+            f.write(" ".join(sent) + "\n")
                     
 def main(newsela_file, newsela_v3_file, original_valid_folder, original_test_folder, output_folder):
-    print("Analyzing Newsela data...")
-    analyze_v2(newsela_file)
+    random.seed(37)
+#    print("Analyzing Newsela v2 data...")
+#    analyze_v2(newsela_file)
+#    print("Analyzing Newsela v3 data...")
+#    analyze_v3(newsela_v3_file)
     
     ## Parses all sentences from validation and test set
     print("Getting validation data...")
@@ -275,18 +477,18 @@ def main(newsela_file, newsela_v3_file, original_valid_folder, original_test_fol
     print("Getting test data...")
     test_src, test_tgt = get_original(original_test_folder, 'test')
 
-    ## Parses all sentences from Newsela version 2
+    ## Parses all sentences from Newsela version 3
     print("Getting v2 data...")
-    source_sents, target_sents = get_v2_sents(newsela_file)
+    source_sents, target_sents, orig_src, orig_tgt = get_v3_sents(newsela_v3_file)
 
     ## Only includes sentences not found in validation or test sentences
     print("Splitting training data...")
-    train_src, train_tgt = get_train(source_sents, target_sents, valid_src, \
+    train_src, train_tgt = get_train(source_sents, target_sents, orig_src, orig_tgt, valid_src, \
                                      valid_tgt, test_src, test_tgt)
 
     ## Aligns v3 with v3 parses
     print("Getting v3 data...")
-    train_src, train_tgt = align_sentences(newsela_v3_file, train_src, train_tgt)
+#    train_src, train_tgt = align_sentences(newsela_v3_file, train_src, train_tgt)
 
     ## Saves original data
     print("Saving original data...")
@@ -300,20 +502,25 @@ def main(newsela_file, newsela_v3_file, original_valid_folder, original_test_fol
     ## Anonymizes data
     print("Anonymizing data...")
     train_src_aner = anonymize_data(train_src)
-    train_tgt_aner = anonymize_data(train_tgt)
+    train_tgt_aner = anonymize_target_data(train_tgt, train_src_aner)
     valid_src_aner = anonymize_data(valid_src)
-    valid_tgt_aner = anonymize_data(valid_tgt)
+    valid_tgt_aner = anonymize_target_data(valid_tgt, valid_src_aner)
     test_src_aner = anonymize_data(test_src)
-    test_tgt_aner = anonymize_data(test_tgt)
+    test_tgt_aner = anonymize_target_data(test_tgt, test_src_aner)
 
+    train_indices = [i for i in range(len(train_src_aner))]
+#    random.shuffle(train_indices)
+    valid_indices = [i for i in range(len(valid_src_aner))]
+    test_indices = [i for i in range(len(test_src_aner))]
+    
     ## Saves anonymized data
     print("Saving anonymized data...")
-    save_aner_data(train_src_aner, output_folder + "train/train.aner.src", output_folder + "train/train.src.aner_map")
-    save_aner_data(train_tgt_aner, output_folder + "train/train.aner.tgt", output_folder + "train/train.tgt.aner_map")
-    save_aner_data(valid_src_aner, output_folder + "valid/valid.aner.src", output_folder + "valid/valid.src.aner_map")
-    save_aner_data(valid_tgt_aner, output_folder + "valid/valid.aner.tgt", output_folder + "valid/valid.tgt.aner_map")
-    save_aner_data(test_src_aner, output_folder + "test/test.aner.src", output_folder + "test/test.src.aner_map")
-    save_aner_data(test_tgt_aner, output_folder + "test/test.aner.tgt", output_folder + "test/test.tgt.aner_map")
+    save_aner_data(train_src_aner, train_indices, output_folder + "train/train.aner.src", output_folder + "train/train.src.aner_map")
+    save_aner_tgt_data(train_tgt_aner, train_indices, output_folder + "train/train.aner.tgt")
+    save_aner_data(valid_src_aner, valid_indices, output_folder + "valid/valid.aner.src", output_folder + "valid/valid.src.aner_map")
+    save_aner_tgt_data(valid_tgt_aner, valid_indices, output_folder + "valid/valid.aner.tgt")
+    save_aner_data(test_src_aner, test_indices, output_folder + "test/test.aner.src", output_folder + "test/test.src.aner_map")
+    save_aner_tgt_data(test_tgt_aner, test_indices, output_folder + "test/test.aner.tgt")
     
     
     
