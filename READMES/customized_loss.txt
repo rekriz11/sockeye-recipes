@@ -1,0 +1,12 @@
+#### Setting up customized loss on Tesla: ####
+
+cd ~/sockeye-recipes/
+
+## Installs custom environment using edited version of sockeye (1.18.57)
+./install/install_sockeye_custom_57.sh -s ~/sockeye-recipes/sockeye_loss -e sockeye_loss2
+
+## Runs
+cd egs/pretrained_embeddings/
+./run_loss_TEST.sh
+
+## Note: This will end in an error right now!

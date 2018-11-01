@@ -36,7 +36,7 @@
 
 ### User-specified directories ###
 workdir=$HOME/sockeye-recipes/egs/pretrained_embeddings
-modeldir=$workdir/model_loss_TEST
+modeldir=$workdir/models/model_loss_TEST/
 rootdir=$HOME/sockeye-recipes
 echo "ROOTDIR $rootdir"
 # DESCRIPTION: rs1: RNN-based seq2seq model, Small
@@ -51,7 +51,7 @@ trg=dst.aner
 # Note we assume tokenization is already done, and will only run BPE
 # For tokenization and other preprocessing, see preprocess-tokenize.sh
 # which does not use this hyperparam.txt file
-train_tok=$workdir/data/test_data/train
+train_tok=$workdir/data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.train
 valid_tok=$workdir/data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.valid
 
 train_src=$train_tok.$src
@@ -93,14 +93,15 @@ optimizer=adam
 initial_learning_rate=0.001
 learning_rate_reduce_factor=0.7
 loss="simple-cross-entropy"
+#loss="cross-entropy"
 complexity_file=$HOME/sockeye-recipes/new_scripts/change_loss/complexity_predictions_TEST.pkl
 complexity_weight=1.0
 seed=13
 
 # Logging and stopping condition
-checkpoint_frequency=50
-min_num_epochs=0
-max_num_epochs=5
+checkpoint_frequency=4000
+min_num_epochs=1
+max_num_epochs=30
 max_updates=500000
 keep_last_params=5
 decode_and_evaluate=1

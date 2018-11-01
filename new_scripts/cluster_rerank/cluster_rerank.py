@@ -6,8 +6,6 @@ import random
 from scipy.cluster.vq import kmeans, vq, whiten
 import numpy as np
 import io
-import nltk
-from nltk.model.ngram import perplexity
 
 ## Gets all candidate simplifications
 def get_test_sents(candidates_file):
