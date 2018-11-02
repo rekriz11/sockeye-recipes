@@ -197,68 +197,22 @@ class SimpleCrossEntropyLoss(Loss):
         # zero out pad symbols (0)
         cross_entropy = mx.sym.where(labels, cross_entropy, mx.sym.zeros((0, self._vocab_size)))
 
-        ## ADDED CODE: makes a symbol of the correct dimensions
-        weights = mx.sym.Variable('weights', \
-                                  shape = (len(self._complex_preds)), \
-                                  init = mx.init.One())
-        weights.set_params(self._complex_preds)
+        ## ADDED CODE: makes a symbol of the complexity weights
+        #weights = mx.sym.Variable('weights', shape = (len(self._complex_preds)), init = mx.init.One())
+        w = mx.sym.Variable('w')
+        w = mx.sym.BlockGrad(w)
+        weights = (w).bind(mx.cpu(), {'w': self._complex_preds})
+
+        #weights.set_params(self._complex_preds)
 
         ## ADDED CODE: does element-wise multiplication
         weighted_probs = broadcast_mul(probs, weights)
         cross_entropy = - mx.sym.log(data=weighted_probs) * cross_entropy
+        
         #cross_entropy = - mx.sym.log(data=probs + 1e-10) * cross_entropy
         cross_entropy = mx.sym.sum(data=cross_entropy, axis=1)
 
         cross_entropy = mx.sym.MakeLoss(cross_entropy, name=C.SIMPLE_CROSS_ENTROPY)
-        probs = mx.sym.BlockGrad(probs, name=C.SOFTMAX_NAME)
-        return [cross_entropy, probs]
-
-    def create_metric(self) -> "CrossEntropyMetric":
-        return CrossEntropyMetric(self.loss_config)
-
-class SmoothedCrossEntropyLoss(Loss):
-    """
-    Computes a smoothed cross-entropy loss. Smoothing is defined by alpha which indicates the
-    amount of probability mass subtracted from the true label probability (1-alpha).
-    Alpha is then uniformly distributed across other labels.
-    :param alpha: Smoothing value.
-    :param vocab_size: Size of the target vocabulary.
-    :param normalize: If True normalize the gradient by dividing by the number of non-PAD tokens.
-    """
-
-    def __init__(self, alpha: float, vocab_size: int, normalize: bool = False):
-        utils.check_condition(alpha >= 0, "alpha for smoothed loss must be >= 0")
-        self._alpha = alpha
-        self._vocab_size = vocab_size
-        self._normalize = normalize
-
-    def get_loss(self, logits: mx.sym.Symbol, labels: mx.sym.Symbol) -> List[mx.sym.Symbol]:
-        """
-        Returns loss and softmax output symbols given logits and integer-coded labels.
-        :param logits: Shape: (batch_size * target_seq_len, target_vocab_size).
-        :param labels: Shape: (batch_size * target_seq_len,).
-        :return: List of loss and softmax output symbols.
-        """
-        probs = mx.sym.softmax(data=logits)
-
-        on_value = 1.0 - self._alpha
-        off_value = self._alpha / (self._vocab_size - 1.0)
-        cross_entropy = mx.sym.one_hot(indices=mx.sym.cast(data=labels, dtype='int32'),
-                                       depth=self._vocab_size,
-                                       on_value=on_value,
-                                       off_value=off_value)
-
-        # zero out pad symbols (0)
-        cross_entropy = mx.sym.where(labels, cross_entropy, mx.sym.zeros((0, self._vocab_size)))
-
-        # compute cross_entropy
-        cross_entropy *= - mx.sym.log(data=probs + 1e-10)
-        cross_entropy = mx.sym.sum(data=cross_entropy, axis=1)
-
-        if self._normalize:
-            cross_entropy = _normalize(cross_entropy, labels)
-
-        cross_entropy = mx.sym.MakeLoss(cross_entropy, name=C.SMOOTHED_CROSS_ENTROPY)
         probs = mx.sym.BlockGrad(probs, name=C.SOFTMAX_NAME)
         return [cross_entropy, probs]
 
