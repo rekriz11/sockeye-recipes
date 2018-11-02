@@ -20,6 +20,7 @@ from typing import List, Optional
 
 import mxnet as mx
 from mxnet.metric import EvalMetric
+from mxnet.symbol import broadcast_mul
 
 from . import config
 from . import constants as C
@@ -42,7 +43,8 @@ def get_simple_probs(pickle_file, complexity_weight):
             new_preds.append(4.0 - p + 1.0)
     ## Normalizes all probabilities
     new_preds = [(p/sum(new_preds)) ** complexity_weight for p in new_preds]
-
+    print("LENGTH OF PREDICTIONS: " + str(len(new_preds)))
+       
     return mx.nd.array(new_preds)
 
 class LossConfig(config.Config):
@@ -69,12 +71,7 @@ class LossConfig(config.Config):
         self.normalization_type = normalization_type
         self.label_smoothing = label_smoothing
         self.complexity_file = complexity_file
-        
-        complex_preds = mx.nd.array([])
-        if complexity_file != "NONE":
-            complex_preds = get_simple_probs(complexity_file, complexity_weight)
-        print(complex_preds)
-        self.complex_preds = complex_preds
+        self.complexity_weight = complexity_weight
 
 
 def get_loss(loss_config: LossConfig) -> 'Loss':
@@ -173,7 +170,13 @@ class SimpleCrossEntropyLoss(Loss):
         self._alpha = loss_config.label_smoothing
         self._vocab_size = loss_config.vocab_size
         self._normalize = loss_config.normalization_type
-        #self._complex_preds = loss_config.complex_preds
+        self._complexity_file = loss_config.complexity_file
+        self._complexity_weight = loss_config.complexity_weight
+
+        complex_preds = mx.nd.array([])
+        if self._complexity_file != "NONE":
+            complex_preds = get_simple_probs(self._complexity_file, self._complexity_weight)
+        self._complex_preds = complex_preds
 
 
     def get_loss(self, logits: mx.sym.Symbol, labels: mx.sym.Symbol) -> List[mx.sym.Symbol]:
@@ -191,14 +194,19 @@ class SimpleCrossEntropyLoss(Loss):
                                        depth=self._vocab_size,
                                        on_value=on_value,
                                        off_value=off_value)
-
         # zero out pad symbols (0)
         cross_entropy = mx.sym.where(labels, cross_entropy, mx.sym.zeros((0, self._vocab_size)))
-        #cross_entropy = mx.sym.where(labels, -mx.sym.log(data=probs + 1e-10), mx.sym.zeros((0, self._vocab_size)))
 
-        # compute simple cross_entropy (ADDED CODE)
-        cross_entropy *= - mx.sym.log(data=probs * self._complex_preds)
-        #cross_entropy *= - mx.sym.log(data=probs + 1e-10)
+        ## ADDED CODE: makes a symbol of the correct dimensions
+        weights = mx.sym.Variable('weights', \
+                                  shape = (len(self._complex_preds)), \
+                                  init = mx.init.One())
+        weights.set_params(self._complex_preds)
+
+        ## ADDED CODE: does element-wise multiplication
+        weighted_probs = broadcast_mul(probs, weights)
+        cross_entropy = - mx.sym.log(data=weighted_probs) * cross_entropy
+        #cross_entropy = - mx.sym.log(data=probs + 1e-10) * cross_entropy
         cross_entropy = mx.sym.sum(data=cross_entropy, axis=1)
 
         cross_entropy = mx.sym.MakeLoss(cross_entropy, name=C.SIMPLE_CROSS_ENTROPY)

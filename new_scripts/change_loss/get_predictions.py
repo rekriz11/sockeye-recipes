@@ -79,11 +79,11 @@ def main(complex_vocab_file,simple_vocab_file, model_file, counts_file, embeddin
 #    print("Predicting complex vocab...")
 #    complex_complexities = predict_complexity(complex_features, complex_vocab, clf, means, stds)
     print("Predicting simple vocab...")
-    simple_compleixties = predict_complexity(simple_features, simple_vocab, clf, means, stds)
+    simple_complexities = predict_complexity(simple_features, simple_vocab, clf, means, stds)
 
     ## Saves predicted complexities
 #    save_complexities(complex_complexities, output_file)
-    save_complexities(simple_compleixties, output_file)
+    save_complexities(simple_complexities, output_file)
     
     
 
@@ -116,10 +116,10 @@ python3 get_predictions.py \
 cd ~/sockeye-recipes/new_scripts/change_loss
 
 python3 get_predictions.py \
-~/sockeye-recipes/egs/pretrained_embeddings/model_loss_TEST/vocab.src.0.json \
-~/sockeye-recipes/egs/pretrained_embeddings/model_loss_TEST/vocab.trg.0.json \
+~/sockeye-recipes/egs/pretrained_embeddings/models/model_loss_TEST/vocab.src.0.json \
+~/sockeye-recipes/egs/pretrained_embeddings/models/model_loss_TEST/vocab.tgt.0.json \
 ~/sockeye-recipes/new_scripts/Predict_Word_Level/lin_reg_we_weight_0.4_0.7.pkl \
 /data2/text_simplification/other_data/word_complexity/unigram-counts.txt \
 /data1/embeddings/eng/GoogleNews-vectors-negative300.bin \
-~/sockeye-recipes/new_scripts/change_loss/complexity_predictions_TEXT.pkl
+~/sockeye-recipes/new_scripts/change_loss/complexity_predictions.pkl
 '''

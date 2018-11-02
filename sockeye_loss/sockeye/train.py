@@ -764,7 +764,7 @@ def main():
     arguments.add_train_cli_args(params)
     args = params.parse_args()
     ## ADDED CODE: Hard-coded path to complexity file on tesla and weight to give these
-    args.complexity_file = "/home/rekriz/sockeye-recipes/new_scripts/change_loss/complexity_predictions_TEST.pkl"
+    args.complexity_file = "/home/rekriz/sockeye-recipes/new_scripts/change_loss/complexity_predictions.pkl"
     args.complexity_weight = 1.0
     train(args)
 

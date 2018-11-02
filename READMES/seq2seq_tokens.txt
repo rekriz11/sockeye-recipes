@@ -14,6 +14,7 @@ bash ~/sockeye-recipes/scripts/translate.sh -p anon_glove_tokens.hpm -i data/new
 bash ~/sockeye-recipes/scripts/translate.sh -p anon_glove_tokens.hpm -i data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.src.aner -o output/tokens.1best_10beam -e sockeye_gpu -b 10 -s -t translation
 
 
+bash ~/sockeye-recipes/scripts/translate.sh -p anon_glove_tokens.hpm -i data/newsela_v2/test.aner.src -o output/v2.1best_greedy -e sockeye_gpu_57 -b 1 -s -t translation
 
 ## Evaluate BLEU:
 python ~/sockeye-recipes/BLEU/bleu.py \
