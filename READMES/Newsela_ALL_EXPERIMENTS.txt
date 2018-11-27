@@ -33,19 +33,6 @@ export LD_LIBRARY_PATH=/usr/local/cuda-8.0/lib64
 ## Translates from model
 bash ~/sockeye-recipes/scripts/translate.sh \
 -p ~/sockeye-recipes/egs/pretrained_embeddings/anon_glove_tokens.hpm \
--i <PATH_TO_ANONYMIZED_DATA> \
--o ~/sockeye-recipes/egs/pretrained_embeddings/output/seq2seq_greedy.anon \
--e sockeye_gpu_57 \
--b 1 \
--t translation \
--n 3 \
--m 0 \
--y 0 \
--s
-
-## Translates from model
-bash ~/sockeye-recipes/scripts/translate.sh \
--p ~/sockeye-recipes/egs/pretrained_embeddings/anon_glove_tokens.hpm \
 -i /home/rekriz/sockeye-recipes/egs/pretrained_embeddings/data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.src.aner \
 -o ~/sockeye-recipes/egs/pretrained_embeddings/output/seq2seq_greedy.anon \
 -e sockeye_gpu_57 \
