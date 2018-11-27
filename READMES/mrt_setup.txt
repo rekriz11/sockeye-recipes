@@ -1,0 +1,12 @@
+## Getting MRT branch of sockeye
+git clone https://github.com/rekriz11/sockeye.git
+git checkout mrt_latest
+
+## Create new environment with this branch
+conda remove --name sockeye_mrt --all
+~/sockeye-recipes/install/install_sockeye_custom_57.sh -s ~/sockeye -e sockeye_mrt
+
+## Training
+cd ~/sockeye/egs/pretrained_embeddings/
+export LD_LIBRARY_PATH=/usr/local/cuda-8.0/lib64
+bash ../../scripts/train.sh -p tiny_rnn.hpm -e sockeye_mrt

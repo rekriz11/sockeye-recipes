@@ -24,6 +24,7 @@ import tensorflow as tf
 
 from google.protobuf import text_format
 import data_utils
+import io
 
 FLAGS = tf.flags.FLAGS
 # General flags.
@@ -84,7 +85,7 @@ def _LoadModel(gd_file, ckpt_file):
     TensorFlow session and tensors dict.
   """
   with tf.Graph().as_default():
-    sys.stderr.write('Recovering graph.\n')
+    #sys.stderr.write('Recovering graph.\n')
     with tf.gfile.FastGFile(gd_file, 'r') as f:
       s = f.read().decode()
       gd = tf.GraphDef()
@@ -112,7 +113,7 @@ def _LoadModel(gd_file, ckpt_file):
                                      'Reshape_3:0',
                                      'global_step:0'], name='')
 
-    sys.stderr.write('Recovering checkpoint %s\n' % ckpt_file)
+    #sys.stderr.write('Recovering checkpoint %s\n' % ckpt_file)
     sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True))
     sess.run('save/restore_all', {'save/Const:0': ckpt_file})
     sess.run(t['states_init'])
@@ -120,16 +121,15 @@ def _LoadModel(gd_file, ckpt_file):
   return sess, t
 
 
-def _EvalModel(dataset):
+def _EvalModel(dataset, current_step):
   """Evaluate model perplexity using provided dataset.
 
   Args:
     dataset: LM1BDataset object.
   """
-  sess, t = _LoadModel(FLAGS.pbtxt, FLAGS.ckpt)
 
-  current_step = t['global_step'].eval(session=sess)
-  sys.stderr.write('Loaded step %d.\n' % current_step)
+  
+  #sys.stderr.write('Loaded step %d.\n' % current_step)
 
   data_gen = dataset.get_batch(BATCH_SIZE, NUM_TIMESTEPS, forever=False)
   sum_num = 0.0
@@ -145,7 +145,6 @@ def _EvalModel(dataset):
     
 
     log_perp = sess.run(t['log_perplexity_out'], feed_dict=input_dict)
-    print(log_perp)    
     
     if np.isnan(log_perp):
       sys.stderr.error('log_perplexity is Nan.\n')
@@ -156,8 +155,7 @@ def _EvalModel(dataset):
       perplexity = np.exp(sum_num / sum_den)
     
 
-    sys.stderr.write('Eval Step: %d, Average Perplexity: %f.\n' %
-                     (i, perplexity))
+    sys.stderr.write('Eval Step: %d, Average Perplexity: %f.\n' % (i, perplexity))
 
     if i > FLAGS.max_eval_steps:
       break
@@ -308,28 +306,38 @@ def main(unused_argv):
   elif FLAGS.mode == 'dump_lstm_emb':
     _DumpSentenceEmbedding(FLAGS.sentence, vocab)
   elif FLAGS.mode == 'predict_perp':
+    sess, t = _LoadModel(FLAGS.pbtxt, FLAGS.ckpt)
+    current_step = t['global_step'].eval(session=sess)
+    
     sentences = []
-    with open(FLAGS.input_data, 'r', encoding='utf8') as f:
+    with open(FLAGS.input_data, 'r') as f:
       sentences = []
       for line in f:
         ls = line[:-1].split("\t")
         sentences.append(ls)
 
       best_sentences = []
-      for sents in sentences:
-        perplexities = []
-        for s in sents:
-          with open("temp_sent.txt", 'w', encoding='utf8') as f:
-            f.write(s)
-            
-          dataset = data_utils.LM1BDatasets("temp_sent.txt", vocab)    
-          perplexities.append(_Predict(dataset))
+      for i in range(len(sentences)):
+        print("Test sentence: " + str(i))
           
-        i = perplexities.index(min(perplexities))
-        best_sentences.append(sents[i])
+        perplexities = []
+        for j in range(len(sentences[i])):
+          if j % 5 == 0:
+            print("Output sentence: " + str(j))
+          
+          with open("temp_sent.txt", 'w') as f:
+            f.write(sentences[i][j])
+
+          print("Loading data...")            
+          dataset = data_utils.LM1BDataset("temp_sent.txt", vocab)
+          print("Calculating perplexity...")
+          perplexities.append(_EvalModel(dataset, current_step))
+          
+        ind = perplexities.index(min(perplexities))
+        best_sentences.append(sentences[i][ind])
 
       ## Return best sentences
-      with open(FLAGS.output_data, 'w', encoding='utf8') as f:
+      with open(FLAGS.output_data, 'w') as f:
         for sent in best_sentences:
           f.write(sent + "\n")
   else:

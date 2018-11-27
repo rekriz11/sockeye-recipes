@@ -198,12 +198,12 @@ class SimpleCrossEntropyLoss(Loss):
         cross_entropy = mx.sym.where(labels, cross_entropy, mx.sym.zeros((0, self._vocab_size)))
 
         ## ADDED CODE: makes a symbol of the complexity weights
-        #weights = mx.sym.Variable('weights', shape = (len(self._complex_preds)), init = mx.init.One())
-        w = mx.sym.Variable('w')
-        w = mx.sym.BlockGrad(w)
-        weights = (w).bind(mx.cpu(), {'w': self._complex_preds})
-
-        #weights.set_params(self._complex_preds)
+        weights = mx.sym.Variable('weights', \
+                                  shape = self._complex_preds.shape, \
+                                  init = mx.init.One())
+       
+        func = (weights).bind(mx.cpu(), {'weights': self._complex_preds})
+        weights = mx.sym.BlockGrad(weights)
 
         ## ADDED CODE: does element-wise multiplication
         weighted_probs = broadcast_mul(probs, weights)
@@ -213,7 +213,8 @@ class SimpleCrossEntropyLoss(Loss):
         cross_entropy = mx.sym.sum(data=cross_entropy, axis=1)
 
         cross_entropy = mx.sym.MakeLoss(cross_entropy, name=C.SIMPLE_CROSS_ENTROPY)
-        probs = mx.sym.BlockGrad(probs, name=C.SOFTMAX_NAME)
+        probs = mx.sym.BlockGrad(weighted_probs, name=C.SOFTMAX_NAME)
+        
         return [cross_entropy, probs]
 
     def create_metric(self) -> "CrossEntropyMetric":

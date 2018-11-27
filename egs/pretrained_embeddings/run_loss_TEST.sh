@@ -14,7 +14,7 @@ echo "1. Get rootdir from hyperparam file: $rootdir"
 #bash $rootdir/scripts/preprocess-bpe.sh $hyperparam_file
 
 echo "3. Starting training with pre-trained embeddings"
-bash $rootdir/scripts/train-embeddings_tokens.sh -p $hyperparam_file -e sockeye_loss
+bash $rootdir/scripts/train-embeddings_loss.sh -p $hyperparam_file -e sockeye_loss
 #qsub -S /bin/bash -V -cwd -q gpu.q -l gpu=1,h_rt=240:00:00,num_proc=2 -j y $rootdir/scripts/train.sh -p $hyperparam_file -e sockeye_gpu
 
 # TBD: testset=newstest2014

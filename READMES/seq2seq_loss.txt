@@ -1,10 +1,12 @@
 ## Installing updated sockeye package:
 cd ~/sockeye-recipes
 
-conda remove --name sockeye_gpu --all
-~/sockeye-recipes/install/install_sockeye_custom.sh -s ~/sockeye-recipes/sockeye -e sockeye_gpu
+conda remove --name sockeye_gpu_57 --all
+~/sockeye-recipes/install/install_sockeye_custom_57.sh -s ~/sockeye -e sockeye_gpu_57
 
 ## Training
-
 cd ~/sockeye-recipes/egs/pretrained_embeddings/
+export LD_LIBRARY_PATH=/usr/local/cuda-8.0/lib64
 ./run_loss_TEST.sh
+
+bash ~/sockeye-recipes/scripts/translate.sh -p anon_glove_loss_TEST.hpm -i data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.src.aner -o output/tokens.1best_100beam.history -e sockeye_gpu_57 -b 100 -s -t beam_store

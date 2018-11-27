@@ -1,0 +1,113 @@
+#############################################
+## To print out all sentences from the beam
+#############################################
+
+#### 1. Translate using original seq2seq model ####
+
+## Translates and stores beam histories
+export LD_LIBRARY_PATH=/usr/local/cuda-8.0/lib64
+
+bash ~/sockeye-recipes/scripts/translate.sh \
+-p anon_glove_tokens.hpm \
+-i data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.src.aner \
+-o output/tokens.history_400beam \
+-e sockeye_gpu_57 \
+-b 400 \
+-s \
+-t beam_store
+
+## Converts beam histories to graph, and prints the sorted list of all completed paths
+## for each input sentence
+python3 ~/sockeye/sockeye_contrib/output_nbest/output_nbest.py \
+-d ~/sockeye-recipes/egs/pretrained_embeddings/output/tokens.history_100beam \
+-o ~/sockeye-recipes/egs/pretrained_embeddings/output/tokens.100best
+
+#### 2. Cluster sentences ####
+
+## Clusters and reranks the output of the beam
+source ~/virtualenvironment/my_new_app/bin/activate
+
+python ~/sockeye-recipes/new_scripts/cluster_rerank/cluster.py \
+/data2/text_simplification/embeddings/enwiki_dbow/doc2vec.bin \
+~/sockeye-recipes/egs/pretrained_embeddings/output/tokens.100best \
+~/sockeye-recipes/egs/pretrained_embeddings/data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.deanonymiser \
+20 \
+~/sockeye-recipes/egs/pretrained_embeddings/output/tokens.100beam.20centroids
+
+#### 3. Rerank sentences ####
+
+## Generates sentence complexity predictions for each centroid
+python3 ~/sockeye-recipes/new_scripts/predict_sentence_level/CNN-sentence-classification-pytorch-master/run_preds.py \
+--mode test \
+--model non-static \
+--datafile /data1/reno/newsela_splits/newsela_sents \
+--epoch 20 \
+--gpu 0 \
+--cands ~/sockeye-recipes/egs/pretrained_embeddings/output/tokens.100beam.20centroids \
+--outfile ~/sockeye-recipes/egs/pretrained_embeddings/output/tokens.100beam.20centroids.preds \
+--early_stopping
+
+## Rerank based only on perplexity
+python ~/sockeye-recipes/new_scripts/cluster_rerank/rerank_2.py \
+/data2/text_simplification/embeddings/enwiki_dbow/doc2vec.bin \
+/data2/text_simplification/models/lm/lm-merged.kenlm \
+~/sockeye-recipes/egs/pretrained_embeddings/output/tokens.100beam.20centroids.preds \
+~/sockeye-recipes/egs/pretrained_embeddings/output/tokens.100beam.20centroids \
+~/sockeye-recipes/egs/pretrained_embeddings/data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.src \
+1 0 0 \
+~/sockeye-recipes/egs/pretrained_embeddings/output/tokens.100beam.top1reranked_perplexity
+
+## Rerank based only on fluency
+python ~/sockeye-recipes/new_scripts/cluster_rerank/rerank_2.py \
+/data2/text_simplification/embeddings/enwiki_dbow/doc2vec.bin \
+/data2/text_simplification/models/lm/lm-merged.kenlm \
+~/sockeye-recipes/egs/pretrained_embeddings/output/tokens.100beam.20centroids.preds \
+~/sockeye-recipes/egs/pretrained_embeddings/output/tokens.100beam.20centroids \
+~/sockeye-recipes/egs/pretrained_embeddings/data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.src \
+0 1 0 \
+~/sockeye-recipes/egs/pretrained_embeddings/output/tokens.100beam.top1reranked_simplicity
+
+## Rerank based only on simplicity
+python ~/sockeye-recipes/new_scripts/cluster_rerank/rerank_2.py \
+/data2/text_simplification/embeddings/enwiki_dbow/doc2vec.bin \
+/data2/text_simplification/models/lm/lm-merged.kenlm \
+~/sockeye-recipes/egs/pretrained_embeddings/output/tokens.100beam.20centroids.preds \
+~/sockeye-recipes/egs/pretrained_embeddings/output/tokens.100beam.20centroids \
+~/sockeye-recipes/egs/pretrained_embeddings/data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.src \
+0 0 1 \
+~/sockeye-recipes/egs/pretrained_embeddings/output/tokens.100beam.top1reranked_fluency
+
+## Rerank based on perplexity, fluency, and simplicity equally
+python ~/sockeye-recipes/new_scripts/cluster_rerank/rerank_2.py \
+/data2/text_simplification/embeddings/enwiki_dbow/doc2vec.bin \
+/data2/text_simplification/models/lm/lm-merged.kenlm \
+~/sockeye-recipes/egs/pretrained_embeddings/output/tokens.100beam.20centroids.preds \
+~/sockeye-recipes/egs/pretrained_embeddings/output/tokens.100beam.20centroids \
+~/sockeye-recipes/egs/pretrained_embeddings/data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.src \
+1/3 1/3 1/3 \
+~/sockeye-recipes/egs/pretrained_embeddings/output/tokens.100beam.top1reranked_even
+
+
+
+#### 4. Automatic Evaluations ####
+
+python ~/sockeye-recipes/SARI/sari.py \
+-c ~/sockeye-recipes/egs/pretrained_embeddings/data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.src.aner \
+-r ~/sockeye-recipes/egs/pretrained_embeddings/data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.dst.aner \
+-s ~/sockeye-recipes/egs/pretrained_embeddings/output/tokens.100beam.top1reranked_perplexity
+
+python ~/sockeye-recipes/SARI/sari.py \
+-c ~/sockeye-recipes/egs/pretrained_embeddings/data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.src.aner \
+-r ~/sockeye-recipes/egs/pretrained_embeddings/data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.dst.aner \
+-s ~/sockeye-recipes/egs/pretrained_embeddings/output/tokens.100beam.top1reranked_even
+
+python ~/sockeye-recipes/SARI/sari.py \
+-c ~/sockeye-recipes/egs/pretrained_embeddings/data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.src.aner \
+-r ~/sockeye-recipes/egs/pretrained_embeddings/data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.dst.aner \
+-s ~/sockeye-recipes/egs/pretrained_embeddings/output/tokens.100beam.top1reranked_fluency
+
+python ~/sockeye-recipes/SARI/sari.py \
+-c ~/sockeye-recipes/egs/pretrained_embeddings/data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.src.aner \
+-r ~/sockeye-recipes/egs/pretrained_embeddings/data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.dst.aner \
+-s ~/sockeye-recipes/egs/pretrained_embeddings/output/tokens.100beam.top1reranked_simplicity
+

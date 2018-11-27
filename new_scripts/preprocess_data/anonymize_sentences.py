@@ -1,5 +1,5 @@
 import spacy
-nlp = spacy.load('en')
+nlp = spacy.load('en_core_web_lg')
 import sys
 
 ## Performs tokenization and named-entity recognition on a sentence
@@ -18,7 +18,11 @@ def parse(sentence):
 def parse_sentences(file):
     sents = []
     with open(file, 'r', encoding='utf8') as f:
+        i = 0
         for line in f:
+            if i % 1000 == 0:
+                print(i)
+            i += 1
             sents.append(parse(line[:-1]))
     return sents
 
@@ -141,4 +145,8 @@ cd ~/sockeye-recipes/new_scripts/preprocess_data/
 python3 anonymize_sentences.py \
 /data2/text_simplification/dataset/test/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.src \
 /data2/text_simplification/Newsela_v3/test/TEST
+
+python3 anonymize_sentences.py \
+/data2/text_simplification/dataset/fb_headline_first_sent/train.article.txt_no_fin \
+/data2/text_simplification/dataset/fb_headline_first_sent/train.src
 '''

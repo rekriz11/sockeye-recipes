@@ -1,5 +1,5 @@
 import spacy
-nlp = spacy.load('en')
+nlp = spacy.load('en_core_web_lg')
 import sys
 
 ## Performs tokenization and named-entity recognition on a sentence

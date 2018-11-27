@@ -1,0 +1,153 @@
+#### Running sockeye pretrained embeddings on tesla (with Newsela v3) ####
+
+source activate sockeye_gpu
+cd ~/sockeye-recipes/egs/pretrained_embeddings
+
+## Training:
+./run_v3.sh
+
+## Translate:
+bash ~/sockeye-recipes/scripts/translate.sh -p anon_glove_v3.hpm -i data/newsela_v3/test.aner.src -o output/v3.1best_greedy -e sockeye_gpu_57 -b 1 -s -t translation
+
+bash ~/sockeye-recipes/scripts/translate.sh -p anon_glove_v3.hpm -i data/newsela_v3/test.aner.src -o output/v3.1best_5beam -e sockeye_gpu_57 -b 5 -s -t translation
+
+bash ~/sockeye-recipes/scripts/translate.sh -p anon_glove_loss_TEST.hpm -i data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.src.aner -o output/loss.1best_greedy -e sockeye_loss -b 1 -s -t translation
+
+bash ~/sockeye-recipes/scripts/translate.sh -p anon_glove_loss_TEST.hpm -i data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.src.aner -o output/loss.1best_5beam -e sockeye_loss -b 5 -s -t translation
+
+bash ~/sockeye-recipes/scripts/translate.sh -p anon_glove_loss_TEST.hpm -i data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.src.aner -o output/loss.1best_10beam -e sockeye_loss -b 10 -s -t translation
+
+bash ~/sockeye-recipes/scripts/translate.sh -p anon_glove_loss_v2.hpm -i data/newsela_v3/test.aner.src -o output/loss_v2.1best_greedy -e sockeye_loss -b 1 -s -t translation
+
+bash ~/sockeye-recipes/scripts/translate.sh -p anon_glove_loss_2.0.hpm -i data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.src.aner -o output/loss_2.0.1best_greedy -e sockeye_loss -b 1 -s -t translation
+
+
+## BLEU Score
+python ~/sockeye-recipes/BLEU/bleu.py \
+-r data/newsela_v3/test.aner.src \
+-s output/v3.1best_greedy
+
+python ~/sockeye-recipes/BLEU/bleu.py \
+-r data/newsela_v3/test.aner.tgt \
+-s output/v3.1best_greedy
+
+python ~/sockeye-recipes/BLEU/bleu.py \
+-r data/newsela_v3/test.aner.src \
+-s output/v3.1best_5beam
+
+python ~/sockeye-recipes/BLEU/bleu.py \
+-r data/newsela_v3/test.aner.tgt \
+-s output/v3.1best_5beam
+
+python ~/sockeye-recipes/BLEU/bleu.py \
+-r data/newsela_v3/test.aner.src \
+-s output/v3.1best_10beam
+
+python ~/sockeye-recipes/BLEU/bleu.py \
+-r data/newsela_v3/test.aner.tgt \
+-s output/v3.1best_10beam
+
+
+python ~/sockeye-recipes/BLEU/bleu.py \
+-r data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.src.aner \
+-s output/loss.1best_greedy
+
+python ~/sockeye-recipes/BLEU/bleu.py \
+-r data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.dst.aner \
+-s output/loss.1best_greedy
+
+python ~/sockeye-recipes/BLEU/bleu.py \
+-r data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.src.aner \
+-s output/loss.1best_5beam
+
+python ~/sockeye-recipes/BLEU/bleu.py \
+-r data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.dst.aner \
+-s output/loss.1best_5beam
+
+python ~/sockeye-recipes/BLEU/bleu.py \
+-r data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.src.aner \
+-s output/loss.1best_10beam
+
+python ~/sockeye-recipes/BLEU/bleu.py \
+-r data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.dst.aner \
+-s output/loss.1best_10beam
+
+
+python ~/sockeye-recipes/BLEU/bleu.py \
+-r data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.src.aner \
+-s output/loss_2.0.1best_greedy
+
+python ~/sockeye-recipes/BLEU/bleu.py \
+-r data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.dst.aner \
+-s output/loss_2.0.1best_greedy
+
+python ~/sockeye-recipes/BLEU/bleu.py \
+-r data/newsela_v2/test.aner.tgt \
+-s output/loss_v2.1best_greedy
+
+
+
+## SARI score
+python ~/sockeye-recipes/SARI/sari.py \
+-c data/newsela_v3/test.aner.src \
+-r data/newsela_v3/test.aner.tgt \
+-s output/v3.1best_greedy
+
+python ~/sockeye-recipes/SARI/sari.py \
+-c data/newsela_v3/test.aner.src \
+-r data/newsela_v3/test.aner.tgt \
+-s output/v3.1best_5beam
+
+python ~/sockeye-recipes/SARI/sari.py \
+-c data/newsela_v3/test.aner.src \
+-r data/newsela_v3/test.aner.tgt \
+-s output/v3.1best_10beam
+
+
+python ~/sockeye-recipes/SARI/sari.py \
+-c data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.src.aner \
+-r data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.dst.aner \
+-s output/loss.1best_greedy
+
+python ~/sockeye-recipes/SARI/sari.py \
+-c data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.src.aner \
+-r data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.dst.aner \
+-s output/loss.1best_5beam
+
+python ~/sockeye-recipes/SARI/sari.py \
+-c data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.src.aner \
+-r data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.dst.aner \
+-s output/loss.1best_10beam
+
+
+
+python ~/sockeye-recipes/SARI/sari.py \
+-c data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.src.aner \
+-r data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.dst.aner \
+-s output/loss_2.0.1best_greedy
+
+python ~/sockeye-recipes/SARI/sari.py \
+-c data/newsela_v2/test.aner.src \
+-r data/newsela_v2/test.aner.tgt \
+-s output/loss_v2.1best_greedy
+
+
+
+## Cluster/reranked sentences
+python ~/sockeye-recipes/BLEU/bleu.py \
+-r data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.dst \
+-s output/tokens.400beam.top1reranked_perplexity
+
+python ~/sockeye-recipes/BLEU/bleu.py \
+-r data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.src \
+-s output/tokens.400beam.top1reranked_perplexity
+
+python ~/sockeye-recipes/SARI/sari.py \
+-c data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.src.aner \
+-r data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.dst.aner \
+-s output/tokens.400beam.top1reranked_perplexity
+
+python ~/sockeye-recipes/SARI/sari_max.py \
+-c data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.src.aner \
+-r data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.dst.aner \
+-s output/tokens.400best

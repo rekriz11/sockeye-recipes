@@ -12,8 +12,27 @@ bash ~/sockeye-recipes/scripts/translate.sh \
 -s \
 -t beam_store
 
+export LD_LIBRARY_PATH=/usr/local/cuda-8.0/lib64
+bash ~/sockeye-recipes/scripts/translate.sh \
+-p anon_glove_tokens.hpm \
+-i output_test/test.src \
+-o output_test/test.history_10beam \
+-e sockeye_gpu_57 \
+-b 10 \
+-s \
+-t beam_store
+
 ## Converts beam histories to graph, and prints the sorted list of all completed paths
 ## for each input sentence
-python3 ~/sockeye-recipes/new_scripts/print_nbest/print_nbest.py \
--d ~/sockeye-recipes/egs/pretrained_embeddings/output/tokens.history_5beam \
--o ~/sockeye-recipes/egs/pretrained_embeddings/output/tokens.5best
+python3 ~/sockeye-recipes/new_scripts/print_nbest/print_nbest_FINAL.py \
+-d ~/sockeye-recipes/egs/pretrained_embeddings/output/tokens.history_400beam \
+-o ~/sockeye-recipes/egs/pretrained_embeddings/output/tokens.400best
+
+
+
+
+
+
+python3 ~/sockeye-recipes/new_scripts/print_nbest/print_nbest_FINAL.py \
+-d ~/sockeye-recipes/egs/pretrained_embeddings/output_test/test.history_10beam \
+-o ~/sockeye-recipes/egs/pretrained_embeddings/output_test/test.10beam

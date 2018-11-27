@@ -1,0 +1,21 @@
+##########################
+## HOW TO RUN DMASS CODE:
+##########################
+
+## Preprocess training data
+cd ~/sockeye-recipes/new_scripts/baselines/dmass/data_process/
+python ppdb_process_train.py
+
+## Parse test data
+cd ~/sockeye-recipes/new_scripts/baselines/dmass/script/parser/src
+
+javac -cp /data1/reno/stanford-corenlp-full-2018-10-05/stanford-corenlp-3.9.2.jar:/data1/reno/stanford-corenlp-full-2018-10-05/stanford-corenlp-3.9.2-models.jar:. parser/SyntaxParser.java
+
+java -cp /data1/reno/stanford-corenlp-full-2018-10-05/stanford-corenlp-3.9.2.jar:/data1/reno/stanford-corenlp-full-2018-10-05/stanford-corenlp-3.9.2-models.jar:. parser/SyntaxParser
+
+## Preprocess test data
+cd ~/sockeye-recipes/new_scripts/baselines/dmass/data_process/
+python ppdb_process_eval.py
+
+## Train model
+python model/train.py -pt glove -ngpus 1 -bsize 32 -fw transformer -out dmass_pt -layer_drop 0.2 -op adagrad -lr 0.01 --mode dress -dim 300 -nh 5 -nhl 4 -nel 4 -ndl 4 -lc True --min_count 5 -eval_freq 0 --memory rule -memcfg mofinal --memory_prepare_step 50000

@@ -20,7 +20,7 @@ stopwords = ['i', 'me', 'my', 'myself', 'we', 'our', 'ours', 'ourselves', 'you',
 
 ## Gets vocab and indices from json file
 def get_vocab(file):
-    with open(file) as json_file:
+    with open(file, encoding='utf8') as json_file:
         vocab = json.load(json_file)
     return vocab
 
@@ -113,6 +113,7 @@ python3 get_predictions.py \
 '''
 
 '''
+FOR VERSION 1!
 cd ~/sockeye-recipes/new_scripts/change_loss
 
 python3 get_predictions.py \
@@ -122,4 +123,17 @@ python3 get_predictions.py \
 /data2/text_simplification/other_data/word_complexity/unigram-counts.txt \
 /data1/embeddings/eng/GoogleNews-vectors-negative300.bin \
 ~/sockeye-recipes/new_scripts/change_loss/complexity_predictions.pkl
+'''
+
+'''
+FOR VERSION 1!
+cd ~/sockeye-recipes/new_scripts/change_loss
+
+python3 get_predictions.py \
+~/sockeye-recipes/egs/pretrained_embeddings/models/model_loss_v2/vocab.src.0.json \
+~/sockeye-recipes/egs/pretrained_embeddings/models/model_loss_v2/vocab.tgt.0.json \
+~/sockeye-recipes/new_scripts/Predict_Word_Level/lin_reg_we_weight_0.4_0.7.pkl \
+/data2/text_simplification/other_data/word_complexity/unigram-counts.txt \
+/data1/embeddings/eng/GoogleNews-vectors-negative300.bin \
+~/sockeye-recipes/new_scripts/change_loss/complexity_predictions_v2.pkl
 '''

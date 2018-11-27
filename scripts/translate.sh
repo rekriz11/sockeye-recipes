@@ -25,7 +25,7 @@ function check_file_exists() {
 
 BEAM_SIZE=1
 
-while getopts ":h?p:e:i:o:d:b:t:s" opt; do
+while getopts ":h?p:e:i:o:d:b:t:n:m:s" opt; do
   case "$opt" in
     h|\?)
       show_help
@@ -46,6 +46,10 @@ while getopts ":h?p:e:i:o:d:b:t:s" opt; do
     d) DEVICE=$OPTARG
       ;;
     s) SKIP_SRC_BPE=1
+      ;;
+    n) NGRAM_BLOCK=$OPTARG
+      ;;
+    m) SINGLE_HYP_MAX=$OPTARG
       ;;
   esac
 done
@@ -88,7 +92,9 @@ if [ "$SKIP_SRC_BPE" == 1 ]; then
 	--disable-device-locking \
 	--beam-size $BEAM_SIZE \
   --max-input-len $max_input_len \
-  --output-type $OUTPUT_TYPE | \
+  --output-type $OUTPUT_TYPE \
+  --beam-block-ngram $NGRAM_BLOCK \
+  --single-hyp-max $SINGLE_HYP_MAX | \
 	sed -r 's/@@( |$)//g' > $OUTPUT_FILE 
 else
     ### Apply BPE to input, run Sockeye.translate, then de-BPE ###
