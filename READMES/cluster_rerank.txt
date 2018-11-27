@@ -1,6 +1,6 @@
 #############################################
 ## To print out all sentences from the beam
-## BEAM SIZE 100
+## BEAM SIZE 100, ngram blocking
 #############################################
 
 #### 1. Translate using original seq2seq model ####
@@ -15,7 +15,7 @@ bash ~/sockeye-recipes/scripts/translate.sh \
 -e sockeye_gpu_57 \
 -b 100 \
 -t translation \
--n 0 \
+-n 3 \
 -m 0 \
 -s
 
@@ -27,7 +27,7 @@ bash ~/sockeye-recipes/scripts/translate.sh \
 -e sockeye_gpu_57 \
 -b 100 \
 -t beam_store \
--n 0 \
+-n 3 \
 -m 0 \
 -s
 

@@ -1,12 +1,4 @@
-#python example to infer document vectors from trained doc2vec model
 import sys
-import gensim.models as g
-import codecs
-import random
-from scipy.cluster.vq import kmeans, vq, whiten
-import numpy as np
-import io
-from sklearn.metrics.pairwise import euclidean_distances
 
 ## Gets all candidate simplifications
 def get_test_sents(candidates_file, anon_file):
@@ -51,8 +43,6 @@ def save_output(sentences, output_file):
         
 
 def main(candidates_file, deanon_file, output_file):
-    random.seed(37)
-
     ## Gets candidate simplifications
     print("Reading in candidates...")
     sentences = get_test_sents(candidates_file, deanon_file)

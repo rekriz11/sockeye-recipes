@@ -25,7 +25,7 @@ function check_file_exists() {
 
 BEAM_SIZE=1
 
-while getopts ":h?p:e:i:o:d:b:t:n:m:s" opt; do
+while getopts ":h?p:e:i:o:d:b:t:n:m:y:s" opt; do
   case "$opt" in
     h|\?)
       show_help
@@ -50,6 +50,8 @@ while getopts ":h?p:e:i:o:d:b:t:n:m:s" opt; do
     n) NGRAM_BLOCK=$OPTARG
       ;;
     m) SINGLE_HYP_MAX=$OPTARG
+      ;;
+    y) BEAM_SIBLING_PENALTY=$OPTARG
       ;;
   esac
 done
@@ -94,7 +96,8 @@ if [ "$SKIP_SRC_BPE" == 1 ]; then
   --max-input-len $max_input_len \
   --output-type $OUTPUT_TYPE \
   --beam-block-ngram $NGRAM_BLOCK \
-  --single-hyp-max $SINGLE_HYP_MAX | \
+  --single-hyp-max $SINGLE_HYP_MAX \
+  --beam-sibling-penalty $BEAM_SIBLING_PENALTY | \
 	sed -r 's/@@( |$)//g' > $OUTPUT_FILE 
 else
     ### Apply BPE to input, run Sockeye.translate, then de-BPE ###
