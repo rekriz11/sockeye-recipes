@@ -17,8 +17,10 @@ conda remove --name sockeye_gpu_57 --all
 ## Install sockeye from our repository
 ~/sockeye-recipes/install/install_sockeye_custom_57.sh -s ~/sockeye -e sockeye_gpu_57
 
-## Copy model from Reno's directory to yours!
+## Copy models from Reno's directory to yours!
 cp -r /home/rekriz/sockeye-recipes/egs/pretrained_embeddings/models/model_tokens/ \
+~/sockeye-recipes/egs/pretrained_embeddings/models/
+cp -r /home/rekriz/sockeye-recipes/egs/pretrained_embeddings/models/model_loss_2.0/ \
 ~/sockeye-recipes/egs/pretrained_embeddings/models/
 
 ## Add cuda 8.0 to your library path
