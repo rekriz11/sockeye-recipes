@@ -174,7 +174,7 @@ def main():
 
     sari_scores = list()
     for i in range(len(simplified_sentences)):
-        sari_scores.append(SARIsent(simplified_sentences[i], complex_sentences[i], [reference_sentences[i]]))
+        sari_scores.append(SARIsent(complex_sentences[i], simplified_sentences[i], [reference_sentences[i]]))
 
     sari_scores = np.array(sari_scores)
     print('SARI score: {}'.format(np.mean(sari_scores)))
