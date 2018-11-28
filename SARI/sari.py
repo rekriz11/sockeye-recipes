@@ -102,6 +102,7 @@ def SARIsent(ssent, csent, rsents):
     r2gramslist = []
     r3gramslist = []
     r4gramslist = []
+    
     for rsent in rsents:
         r1grams = rsent.lower().split(" ")
         r2grams = []
@@ -121,7 +122,7 @@ def SARIsent(ssent, csent, rsents):
         r2gramslist.append(r2grams)
         r3gramslist.append(r3grams)
         r4gramslist.append(r4grams)
-
+    
     for i in range(0, len(s1grams) - 1):
         if i < len(s1grams) - 1:
             s2gram = s1grams[i] + " " + s1grams[i + 1]
@@ -173,7 +174,7 @@ def main():
 
     sari_scores = list()
     for i in range(len(simplified_sentences)):
-        sari_scores.append(SARIsent(simplified_sentences[i], complex_sentences[i], reference_sentences[i]))
+        sari_scores.append(SARIsent(simplified_sentences[i], complex_sentences[i], [reference_sentences[i]]))
 
     sari_scores = np.array(sari_scores)
     print('SARI score: {}'.format(np.mean(sari_scores)))
