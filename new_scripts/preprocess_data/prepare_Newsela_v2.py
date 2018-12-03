@@ -5,7 +5,7 @@ import sys
 ## Performs tokenization and named-entity recognition on a sentence
 def parse_sentence(sentence):
     doc = nlp(sentence)
-    data = [(X.text, X.ent_iob_, X.ent_type_) for X in doc]
+    data = [(X.text, X.ent_iob_, X.ent_type_.upper()) for X in doc]
     return data
 
 ## Parses all sentences from a file 

@@ -2,13 +2,23 @@
 ## HOW TO RUN DMASS CODE:
 ##########################
 
+## Preprocess all data and get vocab files
+python3 preprocess_and_vocab.py \
+../data/newsela/ \
+../data/newsela/
+
 ## Preprocess training data
 cd ~/sockeye-recipes/new_scripts/baselines/dmass/data_process/
 python ppdb_process_train.py
 
-## Parse test data
+## Parse validation data
 cd ~/sockeye-recipes/new_scripts/baselines/dmass/script/parser/src
 
+javac -cp /data1/reno/stanford-corenlp-full-2018-10-05/stanford-corenlp-3.9.2.jar:/data1/reno/stanford-corenlp-full-2018-10-05/stanford-corenlp-3.9.2-models.jar:. parser/SyntaxParserValid.java
+
+java -cp /data1/reno/stanford-corenlp-full-2018-10-05/stanford-corenlp-3.9.2.jar:/data1/reno/stanford-corenlp-full-2018-10-05/stanford-corenlp-3.9.2-models.jar:. parser/SyntaxParserValid
+
+## Parse test data
 javac -cp /data1/reno/stanford-corenlp-full-2018-10-05/stanford-corenlp-3.9.2.jar:/data1/reno/stanford-corenlp-full-2018-10-05/stanford-corenlp-3.9.2-models.jar:. parser/SyntaxParser.java
 
 java -cp /data1/reno/stanford-corenlp-full-2018-10-05/stanford-corenlp-3.9.2.jar:/data1/reno/stanford-corenlp-full-2018-10-05/stanford-corenlp-3.9.2-models.jar:. parser/SyntaxParser
@@ -16,6 +26,47 @@ java -cp /data1/reno/stanford-corenlp-full-2018-10-05/stanford-corenlp-3.9.2.jar
 ## Preprocess test data
 cd ~/sockeye-recipes/new_scripts/baselines/dmass/data_process/
 python ppdb_process_eval.py
+python ppdb_process_eval_valid.py
 
 ## Train model
-python model/train.py -pt glove -ngpus 1 -bsize 32 -fw transformer -out dmass_pt -layer_drop 0.2 -op adagrad -lr 0.01 --mode dress -dim 300 -nh 5 -nhl 4 -nel 4 -ndl 4 -lc True --min_count 5 -eval_freq 0 --memory rule -memcfg mofinal --memory_prepare_step 50000
+python model/train.py \
+-ngpus 1 \
+-bsize 32 \
+-fw transformer \
+-out dmass_pt \
+-layer_drop 0.2 \
+-op adagrad \
+-lr 0.1 \
+-mode dress \
+-dim 300 \
+-nh 5 -nhl 4 -nel 4 -ndl 4 -lc True \
+-mc 5 -mem rule -memcfg mofinal -memstep 50000
+
+## Evaluate model
+
+python model/eval.py \
+-ngpus 1 \
+-bsize 32 \
+-fw transformer \
+-out dmass_pt \
+-layer_drop 0.2 \
+-op adagrad \
+-lr 0.1 \
+-mode dress \
+-dim 300 \
+-nh 5 -nhl 4 -nel 4 -ndl 4 -lc True \
+-mc 5 -mem rule -memcfg mofinal -memstep 50000
+
+## Deanonymize sentences
+python3 ~/sockeye-recipes/new_scripts/cluster_rerank/deanonymize_dmass.py \
+~/sockeye-recipes/new_scripts/baselines/dmass/output_0.1/result/mteval_target_real_114348.xml \
+~/sockeye-recipes/egs/pretrained_embeddings/data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.deanonymiser \
+/data2/text_simplification/output/dmass1.BASELINE
+
+## Calculates SARI
+python ~/sockeye-recipes/SARI/sari_old.py \
+-c /data2/text_simplification/output/newsela_complex.REFERENCE \
+-r /data2/text_simplification/output/newsela_simple.REFERENCE \
+-s /data2/text_simplification/output/dmass1.BASELINE
+
+

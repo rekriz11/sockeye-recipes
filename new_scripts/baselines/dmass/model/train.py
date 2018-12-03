@@ -5,12 +5,14 @@ import sys
 #sys.path.insert(0,'/ihome/cs2770_s2018/maz54/ts/text_simplification')
 #sys.path.insert(0,'/home/zhaos5/ts/text_simplification')
 sys.path.insert(0,'/home/rekriz/sockeye-recipes/new_scripts/baselines/dmass/')
+sys.path.insert(0,'/home/rekriz/sockeye-recipes/new_scripts/baselines/dmass/model/')
 
 from data_generator.train_data import TrainData
 from model.transformer import TransformerGraph
 from model.seq2seq import Seq2SeqGraph
 from model.model_config import DefaultConfig, DefaultTrainConfig, list_config
-from model.model_config import WikiDressLargeNewTrainDefault, WikiDressHugeNewTrainDefault,WikiDressLargeTrainDefault
+#from model.model_config import WikiDressLargeNewTrainDefault, WikiDressHugeNewTrainDefault,WikiDressLargeTrainDefault
+from model.model_config import WikiDressLargeTrainDefault
 from data_generator.vocab import Vocab
 from util import session
 from util import constant

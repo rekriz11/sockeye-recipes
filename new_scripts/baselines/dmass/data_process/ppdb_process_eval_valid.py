@@ -271,8 +271,8 @@ def populate_ppdb():
     s_t = datetime.now()
     cnt = 0
     for line in open('/data2/text_simplification/SimplePPDB/SimplePPDB'):
-        if True:
-#        if cnt < 10000:
+        #if True:
+        if cnt < 10000:
             process_line(line)
             cnt += 1
             if cnt % 500000 == 0:
@@ -350,11 +350,9 @@ for line in open(voc_file):
     if cnt >= 5:
         voc.add(items[0])
 
-print(len(voc))
 
-
-base = '/home/rekriz/sockeye-recipes/new_scripts/baselines/dmass/data/newsela/test/'
-f_src = open(base + 'test.aner.src')
+base = '/home/rekriz/sockeye-recipes/new_scripts/baselines/dmass/data/newsela/valid/'
+f_src = open(base + 'valid.aner.src')
 f = open(base + 'rule_mapper.txt', 'w')
 f_s = open(base + 'syntax.txt')
 lines_mapper = []
@@ -403,12 +401,11 @@ while True:
         span = e_time - s_time
         print('Finished %s with %s.' % (str(len(lines_mapper)), str(span)))
         s_time = e_time
-        #f.write('\n'.join(lines_mapper))
-        #f.flush()
-        #del lines_mapper[:]
-print(len(lines_mapper))
+        f.write('\n'.join(lines_mapper))
+        f.flush()
+        del lines_mapper[:]
 
-f.write('\n'.join(lines_mapper) + "\n")
+f.write('\n'.join(lines_mapper))
 f.close()
 
 c = Counter()
@@ -420,7 +417,6 @@ for line in lines_mapper:
             if rule not in c:
                 c[rule] = weight
 
-'''
 rules = []
 for rule, cnt in c.most_common():
     items = rule.split('=>')
@@ -428,11 +424,7 @@ for rule, cnt in c.most_common():
         rule = '%s=>%s' % (items[1], items[2])
         rules.append('%s\t%s' % (rule, str(cnt)))
 
-print(len(rules))
-
 f = open(base + 'rule_voc.txt', 'w')
 f.write('\n'.join(rules))
 f.close()
-'''
-
 

@@ -174,6 +174,7 @@ python -m sockeye.train -s $train_src \
                         --complexity-file $complexity_file \
                         --complexity-weight $complexity_weight \
                         $device \
+                        --copy \
                         -o $modeldir
 
 

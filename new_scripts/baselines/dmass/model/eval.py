@@ -2,8 +2,10 @@
 import sys
 # sys.path.insert(0, '/ihome/hdaqing/saz31/sanqiang/text_simplification')
 # sys.path.insert(0,'/home/hed/text_simp_proj/text_simplification')
-sys.path.insert(0,'/ihome/cs2770_s2018/maz54/ts/text_simplification')
-sys.path.insert(0,'/home/zhaos5/ts/text_simplification')
+#sys.path.insert(0,'/ihome/cs2770_s2018/maz54/ts/text_simplification')
+#sys.path.insert(0,'/home/zhaos5/ts/text_simplification')
+sys.path.insert(0,'/home/rekriz/sockeye-recipes/new_scripts/baselines/dmass/')
+sys.path.insert(0,'/home/rekriz/sockeye-recipes/new_scripts/baselines/dmass/model/')
 
 
 from data_generator.val_data import ValData
@@ -204,6 +206,7 @@ def eval(model_config=None, ckpt=None):
                    'loss': graph.loss,
                    'global_step': graph.global_step}
         if model_config.replace_unk_by_emb:
+            print("########REPLACING UNKS########")
             fetches.update(
                 {'encoder_embs': [obj['encoder_embs'] for obj in graph.objs],
                  'final_outputs': [obj['final_outputs'] for obj in graph.objs]})
@@ -213,6 +216,7 @@ def eval(model_config=None, ckpt=None):
         output_target, loss, step = (results['decoder_target_list'], results['loss'],
                                           results['global_step'])
         if model_config.replace_unk_by_emb:
+            print("########REPLACING UNKS########")
             output_encoder_embs, output_final_outputs = results['encoder_embs'], results['final_outputs']
         if model_config.replace_unk_by_attn:
             attn_distr = results['attn_distr']

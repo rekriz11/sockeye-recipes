@@ -3,6 +3,8 @@ from util.arguments import get_args
 
 
 args = get_args()
+print("SUBWORD VOCAB SIZE...")
+print(args.subword_vocab_size)
 
 
 def get_path(file_path, env='sys'):
@@ -55,7 +57,7 @@ class DefaultConfig():
 
     # post process
     replace_unk_by_attn = False
-    replace_unk_by_emb = False
+    replace_unk_by_emb = True
     replace_unk_by_cnt = False
     replace_ner = True
     if framework == 'transformer':
@@ -82,20 +84,19 @@ class DefaultConfig():
     attention_type = args.attention_type
 
     data_base = 'newsela'
-    fb = 'V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.'
-    train_dataset_simple = get_path('data/newsela/train/%strain.dst.aner'%fb, 'sys')
+    train_dataset_simple = get_path('data/newsela/train/train.aner.tgt', 'sys')
     #train_dataset_simple_ext = get_path('data/%s/train_dummy_simple_dataset_ext' % data_base, 'sys')
     #train_dataset_simple2 = get_path('data/%s/train_dummy_simple_dataset2'%data_base, 'sys')
 
-    train_dataset_complex = get_path('data/newsela/train/%strain.src.aner'%fb, 'sys')
+    train_dataset_complex = get_path('data/newsela/train/train.aner.src', 'sys')
     #train_dataset_complex2 = get_path('data/%s/train_dummy_complex_dataset2%data_base', 'sys')
-    train_dataset_complex_ppdb = get_path('data/%s/train_dummy_complex_dataset.rules'%data_base, 'sys')
+    train_dataset_complex_ppdb = get_path('data/newsela/train/rule_mapper.txt', 'sys')
     #train_dataset_complex_ppdb_cand = get_path('data/%s/train_dummy_complex_dataset_cand.rules'%data_base, 'sys')
-    val_dataset_complex_ppdb = get_path('data/%s/eval_dummy_complex_dataset.rules'%data_base, 'sys')
-    vocab_simple = get_path('data/%s/dummy_simple_vocab'%data_base, 'sys')
-    vocab_complex = get_path('data/%s/dummy_complex_vocab'%data_base, 'sys')
-    vocab_all = get_path('data/%s/dummy_vocab'%data_base, 'sys')
-    vocab_rules = get_path('data/%s/dummy_rules_vocab'%data_base, 'sys')
+    val_dataset_complex_ppdb = get_path('data/newsela/test/rule_mapper.txt', 'sys')
+    vocab_simple = get_path('data/newsela/train/vocab.tgt' 'sys')
+    vocab_complex = get_path('data/newsela/train/vocab.src', 'sys')
+    vocab_all = get_path('data/newsela/train/vocab.all', 'sys')
+    vocab_rules = get_path('data/newsela/train/rule_voc.txt', 'sys')
     rule_mode = 'unigram'
     # if args.lower_case:
     #     vocab_simple = vocab_simple + '.lower'
@@ -105,25 +106,29 @@ class DefaultConfig():
     subword_vocab_size = args.subword_vocab_size
 
     if subword_vocab_size > 0:
-        subword_vocab_simple = get_path('data/%s/dummy_subvocab'%data_base, 'sys')
-        subword_vocab_complex = get_path('data/%s/dummy_subvocab'%data_base, 'sys')
-        subword_vocab_all = get_path('data/%s/dummy_subvocab'%data_base, 'sys')
+        subword_vocab_simple = get_path('data/newsela/train/vocab.tgt.bpe', 'sys')
+        subword_vocab_complex = get_path('data/newsela/train/vocab.src.bpe', 'sys')
+        subword_vocab_all = get_path('data/newsela/train/vocab.all.bpe', 'sys')
         max_complex_sentence = 100
         max_simple_sentence = 90
 
-    val_dataset_simple_folder = get_path('data/%s/'%data_base, 'sys')
-    val_dataset_simple_file = 'valid_dummy_simple_dataset'
-    val_dataset_complex = get_path('data/%s/valid_dummy_complex_dataset'%data_base, 'sys')
-    val_mapper = get_path('data/%s/valid_dummy_mapper'%data_base, 'sys')
+    val_dataset_simple_folder = get_path('data/%s/test/'%data_base, 'sys')
+    val_dataset_simple_file = 'test.aner.tgt'
+    val_dataset_complex = get_path('data/newsela/test/test.aner.src', 'sys')
+    val_mapper = get_path('data/newsela/test/rule_mapper.txt', 'sys')
     val_dataset_complex_rawlines_file = val_dataset_complex
-    val_dataset_simple_rawlines_file_references = 'valid_dummy_simple_dataset.raw.'
+    val_dataset_simple_rawlines_file_references = val_dataset_simple_file
     val_dataset_simple_rawlines_file = val_dataset_simple_file
-    num_refs = 3
+    num_refs = 1
 
-    output_folder = args.output_folder
-    logdir = get_path('../' + output_folder + '/log/', environment)
-    modeldir = get_path('../' + output_folder + '/model/', environment)
-    resultdir = get_path('../' + output_folder + '/result/', environment)
+    #output_folder = args.output_folder
+    output_folder = '/home/rekriz/sockeye-recipes/new_scripts/baselines/dmass/output_0.1'
+    logdir = output_folder + '/log/'
+    modeldir = output_folder + '/model/'
+    resultdir = output_folder + '/result/'
+
+    print("RESULT DIR:")
+    print(resultdir)
 
     allow_growth = True
     # per_process_gpu_memory_fraction = 1.0
@@ -135,7 +140,7 @@ class DefaultConfig():
     corpus_sari_script = get_path('script/corpus_sari.sh', 'sys')
     corpus_sari_script_nonref = get_path('script/corpus_sari_nonref.sh', 'sys')
 
-    path_ppdb_refine = get_path(args.path_ppdb_refine, 'sys')
+    #path_ppdb_refine = get_path(args.path_ppdb_refine, 'sys')
 
     # For Exp
     penalty_alpha = args.penalty_alpha
@@ -176,6 +181,7 @@ class DefaultConfig():
             rl_configs['sari_weight'] = float(kv[1])
         if kv[0] == 'rule':
             rl_configs['rule'] = True
+            '''
             if len(kv) > 1:
                 if kv[1] == 'large':
                     train_dataset_complex_ppdb_cand = get_path(
@@ -183,6 +189,7 @@ class DefaultConfig():
                 elif kv[1] == 'huge':
                     train_dataset_complex_ppdb_cand = get_path(
                         '../text_simplification_data/train/dress/wikihugenew/train/rule_cand.txt', 'sys')
+            '''
             if len(kv) > 2:
                 rulecnt_threshold = float(kv[2])
 
@@ -209,8 +216,13 @@ class DefaultTestConfig(DefaultConfig):
     environment = args.environment
     beam_search_size = 1
     batch_size = 2
-    output_folder = args.output_folder
-    resultdir = get_path('../' + output_folder + '/result/test1', environment)
+    #output_folder = args.output_folder
+    #resultdir = get_path('../' + output_folder + '/result/test1', environment)
+
+    #print("RESULT DIR:")
+    #print(resultdir)
+
+    
 
 
 ########################################################################################## WIKILARGE
@@ -221,9 +233,8 @@ class WikiDressLargeDefault(DefaultConfig):
     save_model_secs = 600
     model_eval_freq = args.model_eval_freq
 
-    fb = 'V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.'
-    train_dataset_simple = get_path('data/newsela/train/%strain.dst.aner'%fb, 'sys')
-    train_dataset_complex = get_path('data/newsela/train/%strain.src.aner'%fb, 'sys')
+    train_dataset_simple = get_path('data/newsela/train/train.aner.tgt', 'sys')
+    train_dataset_complex = get_path('data/newsela/train/train.aner.src', 'sys')
     vocab_rules = get_path('data/newsela/train/rule_voc.txt', 'sys')
     train_dataset_complex_ppdb = get_path('data/newsela/train/rule_mapper.txt', 'sys')
 
@@ -231,26 +242,24 @@ class WikiDressLargeDefault(DefaultConfig):
     vocab_simple = get_path(
         'data/newsela/train/vocab.src', 'sys')
     vocab_complex = get_path(
-        'data/newsela/train/vocab.dst', 'sys')
+        'data/newsela/train/vocab.tgt', 'sys')
     # vocab_all = get_path(
     #     '../text_simplification_data/train/dress/wikilarge/train/voc_all.txt', 'sys')
 
-    val_dataset_simple_folder = get_path('../text_simplification_data/val/', 'sys')
-    val_dataset_simple_file = 'tune.8turkers.tok.simp.ner'
+    #val_dataset_simple_folder = get_path('data/', 'sys')
+    #val_dataset_simple_file = 'tune.8turkers.tok.simp.ner'
     #val_dataset_complex = get_path('../text_simplification_data/val/tune.8turkers.tok.norm.ner', 'sys')
     #val_mapper = get_path('../text_simplification_data/val/tune.8turkers.tok.map', 'sys')
     # wiki.full.aner.ori.valid.dst is uppercase whereas tune.8turkers.tok.simp is lowercase
-    val_dataset_complex_rawlines_file = get_path(
-        '../text_simplification_data/val/tune.8turkers.tok.norm', 'sys')
-    val_dataset_simple_rawlines_file_references = 'tune.8turkers.tok.turk.'
-    val_dataset_simple_rawlines_file = 'tune.8turkers.tok.simp'
+    #val_dataset_complex_rawlines_file = get_path('../text_simplification_data/val/tune.8turkers.tok.norm', 'sys')
+    #val_dataset_simple_rawlines_file_references = 'tune.8turkers.tok.turk.'
+    #val_dataset_simple_rawlines_file = 'tune.8turkers.tok.simp'
 
-    val_dataset_simple_raw_file = 'wiki.full.aner.ori.valid.dst'
-    val_dataset_complex_raw = get_path(
-        '../text_simplification_data/val/wiki.full.aner.ori.valid.src', 'sys')
+    #val_dataset_simple_raw_file = 'wiki.full.aner.ori.valid.dst'
+    #val_dataset_complex_raw = get_path('../text_simplification_data/val/wiki.full.aner.ori.valid.src', 'sys')
 
 
-    num_refs = 8
+    num_refs = 1
 
     dimension = args.dimension
 
@@ -271,31 +280,35 @@ class WikiDressLargeTrainDefault(WikiDressLargeDefault):
 class WikiDressLargeEvalDefault(WikiDressLargeDefault):
     beam_search_size = 1
     environment = args.environment
-    output_folder = args.output_folder
-    resultdir = get_path('../' + output_folder + '/result/eightref_val', environment)
+    #output_folder = args.output_folder
+    #resultdir = get_path('../' + output_folder + '/result/eightref_val', environment)
+    #print("RESULT DIR:")
+    #print(resultdir)
     max_cand_rules = 50
-    val_dataset_complex_ppdb = get_path('../text_simplification_data/train/dress/wikilargenew/val/rule_mapper.txt', 'sys')
+    #val_dataset_complex_ppdb = get_path('../text_simplification_data/train/dress/wikilargenew/val/rule_mapper.txt', 'sys')
 
 
 class WikiDressLargeTestDefault(WikiDressLargeDefault):
     beam_search_size = 1
     environment = args.environment
-    output_folder = args.output_folder
-    resultdir = get_path('../' + output_folder + '/result/eightref_test', environment)
+    #output_folder = args.output_folder
+    #resultdir = get_path('../' + output_folder + '/result/eightref_test', environment)
+    #print("RESULT DIR:")
+    #print(resultdir)
 
-    val_dataset_simple_folder = get_path('../text_simplification_data/test/')
+    #val_dataset_simple_folder = get_path('../text_simplification_data/test/')
     # use the original dress
-    val_dataset_simple_file = 'wiki.full.aner.test.dst'
-    val_dataset_complex = get_path('../text_simplification_data/test/wiki.full.aner.test.src')
-    val_mapper = get_path('../text_simplification_data/test/test.8turkers.tok.map.dress')
-    val_dataset_complex_rawlines_file = get_path(
-        '../text_simplification_data/test/test.8turkers.tok.norm')
-    val_dataset_simple_rawlines_file_references = 'test.8turkers.tok.turk.'
-    val_dataset_simple_rawlines_file = 'test.8turkers.tok.simp'
-    num_refs = 8
+    #val_dataset_simple_file = 'wiki.full.aner.test.dst'
+    #val_dataset_complex = get_path('../text_simplification_data/test/wiki.full.aner.test.src')
+    #val_mapper = get_path('../text_simplification_data/test/test.8turkers.tok.map.dress')
+    #val_dataset_complex_rawlines_file = get_path(
+    #    '../text_simplification_data/test/test.8turkers.tok.norm')
+    #val_dataset_simple_rawlines_file_references = 'test.8turkers.tok.turk.'
+    #val_dataset_simple_rawlines_file = 'test.8turkers.tok.simp'
+    num_refs = 1
 
     max_cand_rules = 50
-    val_dataset_complex_ppdb = get_path('../text_simplification_data/train/dress/wikilargenew/test/rule_mapper.txt', 'sys')
+    #val_dataset_complex_ppdb = get_path('../text_simplification_data/train/dress/wikilargenew/test/rule_mapper.txt', 'sys')
 
 
 def list_config(config):

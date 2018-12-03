@@ -37,8 +37,7 @@ class ValData:
         for i in range(self.model_config.num_refs):
             ref_tmp_rawlines = self.populate_data_rawfile(
                 self.model_config.val_dataset_simple_folder +
-                self.model_config.val_dataset_simple_rawlines_file_references +
-                str(i))
+                self.model_config.val_dataset_simple_rawlines_file_references)
             self.data_references_raw_lines.append(ref_tmp_rawlines)
 
         if self.model_config.replace_ner:
@@ -153,11 +152,17 @@ class ValData:
     def get_data_iter(self):
         i = 0
         while True:
+            if i % 100 == 0:
+                print("Processed " + str(i) + " examples so far")
             ref_rawlines_batch = [self.data_references_raw_lines[j][i]
                                   for j in range(self.model_config.num_refs)]
             supplement = {}
             if 'rule' in self.model_config.memory:
-                supplement['mem'] = self.rules[i]
+                try:
+                    supplement['mem'] = self.rules[i]
+                except IndexError:
+                    print("****INDEX ERROR: " + str(i))
+                    yield None
 
             obj = {
                 'sentence_simple': self.data[i]['words_simp'],

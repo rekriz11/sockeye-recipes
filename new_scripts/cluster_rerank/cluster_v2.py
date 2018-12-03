@@ -41,7 +41,6 @@ def get_test_sents(candidates_file, anon_file):
             ls = line[:-1].split("\t")
             sent = [s.split(" ")for s in ls]
 
-            
             for i in range(len(sent)):
                 for j in range(len(sent[i])):
                     if '@' in sent[i][j] and len(sent[i][j]) > 1:
@@ -164,7 +163,7 @@ if __name__ == '__main__':
 
 
 '''
-python ~/sockeye-recipes/new_scripts/cluster_rerankcluster.py \
+python ~/sockeye-recipes/new_scripts/cluster_rerank/cluster.py \
 /data2/text_simplification/embeddings/enwiki_dbow/doc2vec.bin \
 ~/sockeye-recipes/egs/pretrained_embeddings/output/tokens.100best \
 ~/sockeye-recipes/egs/pretrained_embeddings/data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.deanonymiser \

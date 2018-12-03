@@ -53,6 +53,13 @@ class TrainData:
             self.vocab_rule = Rule(model_config, self.model_config.vocab_rules)
             self.rules_target, self.rules_align = self.populate_rules(
                 self.model_config.train_dataset_complex_ppdb, self.vocab_rule)
+            print(len(self.rules_align))
+            print(self.rules_align[0])
+            print(self.rules_align[94206])
+            print(self.size)
+            print(len(self.rules_target))
+            print(self.rules_target[0])
+            print(self.rules_target[94206])
             assert len(self.rules_align) == self.size
             assert len(self.rules_target) == self.size
             print('Populate Rule with size:%s' % self.vocab_rule.get_rule_size())
@@ -159,7 +166,10 @@ class TrainData:
 
     def populate_rules(self, rule_path, vocab_rule):
         data_target, data_align = [], []
+
+        i = 0
         for line in open(rule_path, encoding='utf-8'):
+            i += 1
             cur_rules = line.split('\t')
             tmp, tmp_align = [], []
             for cur_rule in cur_rules:
@@ -173,6 +183,10 @@ class TrainData:
                              self.vocab_simple.encode(rule_targets[0])))
             data_target.append(tmp)
             data_align.append(tmp_align)
+
+        ## ADDED CODE: THIS MAY BE WRONG!!!!!
+        data_target.append([])
+        data_align.append([])
 
         return data_target, data_align
 
