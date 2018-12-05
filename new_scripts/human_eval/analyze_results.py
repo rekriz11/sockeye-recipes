@@ -118,8 +118,3 @@ def main(mturk_file):
 if __name__ == '__main__':
     mturk_file = 'results/Batch_3457498_batch_results.csv'
     main(mturk_file)
-
-'''
-python analyze_results.py \
-results/Batch_3457279_batch_results.csv
-'''
