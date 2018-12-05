@@ -107,8 +107,8 @@ def main(mturk_file):
     simps = calculate_results(mturk_dict, 'simp')
 
     print("\n#### OVERALL STATS ####")
-    systems = ["REFERENCE SIMPLE", "SEQ2SEQ GREEDY", "HYBRID", \
-               "DRESS-LS", "DMASS", "SEQ2SEQ ALL EVEN", "SEQ2SEQ ALL BEST"]
+    systems = ["REFERENCE SIMPLE", "S2S", "HYBRID", \
+               "DRESS-LS", "DMASS", "S2S-ALL-FAS", "S2S-ALL-FA"]
     for i in range(len(grammar)):
         if i != 1:
             print(systems[i] + ": " + str(round(sum([grammar[i], means[i], simps[i]])/3, 2)))
