@@ -123,22 +123,30 @@ def rank_candidates(sentences, dress_sents, perplexities, comp_preds, similariti
                     weights[2]*similarities[i][j]
             scores.append(score)
 
+        '''
+        for c, sent in enumerate(sentences[i]):
+            print(str(c) + "\t" + str(sent))
+        print()
+        '''
+
         ranked_indices = sorted(range(len(scores)), key=lambda k: scores[k], reverse=True)
 
         sent_lengths = [len(sentences[i][s]) for s in ranked_indices]
         dress_length = len(dress_sents[i]) + diff
 
         '''
-        print([sentences[i][s] for s in ranked_indices])
+        for c in range(len(ranked_indices)):
+            print(str(c) + "\t" + str(sentences[i][ranked_indices[c]]))
+
         print("SENTENCE LENGTHS FOR SENTENCE " + str(i))
         print(sent_lengths)
-        print(dress_length)
+        print("TARGET LENGTH: " + str(dress_length))
         '''
         
 
         ## Gets the highest ranked sentence of the same length as dress output
         max_index = -1
-        diff = 0
+        temp_diff = 0
         while max_index == -1:
             for ind in range(int(len(ranked_indices)/2)):
                 '''
@@ -146,17 +154,19 @@ def rank_candidates(sentences, dress_sents, perplexities, comp_preds, similariti
                       str(dress_length - diff) + ", " + \
                       str(dress_length + diff))
                 '''
-                if sent_lengths[ind] == dress_length - diff \
-                   or sent_lengths[ind] == dress_length + diff:
+                if sent_lengths[ind] == dress_length - temp_diff \
+                   or sent_lengths[ind] == dress_length + temp_diff:
                     max_index = ind
                     break
-            diff += 1
+            temp_diff += 1
 
-        '''        
-        print(max_index)
+        '''
+        print("RANK OF SENTENCE: " + str(max_index))
+        print("ORIGINAL INDEX OF SENTENCE: " + str(ranked_indices[max_index]))
         print(sentences[i][ranked_indices[max_index]])
         print("\n")
         '''
+        
         
         top_sentences.append(sentences[i][ranked_indices[max_index]])
         max_indices.append(max_index)
