@@ -17,8 +17,8 @@ def read_results(mturk_file):
 def calculate_results(mturk_dict, name):
     stat = [dict() for i in range(7)]
 
-    systems = ["REFERENCE SIMPLE", "SEQ2SEQ GREEDY", "HYBRID", \
-               "DRESS-LS", "DMASS", "SEQ2SEQ ALL EVEN", "SEQ2SEQ ALL BEST"]
+    systems = ["REFERENCE SIMPLE", "S2S", "HYBRID", \
+               "DRESS-LS", "DMASS", "S2S-ALL-FAS", "S2S-ALL-FA"]
 
     reference_sents = dict()
     
@@ -82,7 +82,8 @@ def calculate_results(mturk_dict, name):
     print()
     
     for i in range(len(systems)):
-        print(systems[i] + ": " + str(avg[i]))                
+        if i != 1:
+            print(systems[i] + ": " + str(avg[i]))                
             
     return avg
         
@@ -101,7 +102,8 @@ def main(mturk_file):
     systems = ["REFERENCE SIMPLE", "SEQ2SEQ GREEDY", "HYBRID", \
                "DRESS-LS", "DMASS", "SEQ2SEQ ALL EVEN", "SEQ2SEQ ALL BEST"]
     for i in range(len(grammar)):
-        print(systems[i] + ": " + str(round(sum([grammar[i], means[i], simps[i]])/3, 2)))
+        if i != 1:
+            print(systems[i] + ": " + str(round(sum([grammar[i], means[i], simps[i]])/3, 2)))
         
     
 
