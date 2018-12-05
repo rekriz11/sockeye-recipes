@@ -31,7 +31,7 @@ def calculate_results(mturk_dict, name):
             
             for j in range(1, 5):
                 index = int(row_dict["Input.id" + str(i) + str(j)])
-                sent_id = row_dict["HITId"] + str(i)               
+                sent_id = row_dict["HITId"] + str(i)
                 s = int(row_dict["Answer." + name + str(i) + str(j)])
 
                 ## Adds to a list (each sentence should have 5 judgements)
@@ -39,7 +39,6 @@ def calculate_results(mturk_dict, name):
                     stat[index][sent_id].append(s)
                 except KeyError:
                     stat[index][sent_id] = [s]
-
                 simple_sent = row_dict["Input.sys" + str(i) + str(j)]
 
     ## Calculates average disagreement between human annotators
@@ -73,13 +72,22 @@ def calculate_results(mturk_dict, name):
                 del v[min_index]
             avg_stat[i].append(sum(v)/len(v))
     ## Calculates overall averages
-    avg = [round(sum(s)/len(s), 2) for s in avg_stat]
 
-    print("Average disagreement: " + str(sum(diffs)/len(diffs)))
+    avg = []
+    for i,s in enumerate(avg_stat):
+        if i != 1:
+            avg.append(round(sum(s)/len(s), 2))
+        else:
+            avg.append(0)
+
+    print("Average disagreement: " + str(round(sum(diffs)/len(diffs), 2)))
+    print()
+    '''
     print("Disagreement distribution: ")
     print(diff_dist)
     print([round(d/sum(diff_dist), 3) for d in diff_dist])
     print()
+    '''
     
     for i in range(len(systems)):
         if i != 1:
