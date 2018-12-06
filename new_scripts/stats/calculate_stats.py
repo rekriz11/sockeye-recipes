@@ -45,7 +45,7 @@ def format_file(filename, lines):
     with open(filename, 'w') as file:
         for i, line in enumerate(lines):
             file.write(f'{line.strip()} ({i})\n')
-    
+
 def process_simple_file(simple_fn):
     if args['directory'] is not None:
         simple_fn = os.path.join(args['directory'], simple_fn)
@@ -60,7 +60,7 @@ def process_simple_file(simple_fn):
     write_out_str(simple_fn)
     avg_length = sum([len(sent.split(' ')) for sent in simple_sents]) / n
     write_out_stat('Length', avg_length)
-    avg_fkscore = sum([textstat.flesch_reading_ease(sent) for sent in simple_sents]) / n
+    avg_fkscore = sum([textstat.flesch_kincaid_grade(sent) for sent in simple_sents]) / n
     write_out_stat('Flesch-Kincaid', avg_fkscore)
 
     # TER
