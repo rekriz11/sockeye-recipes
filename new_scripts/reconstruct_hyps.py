@@ -3,7 +3,7 @@ import json
 import sys
 from collections import deque
 
-if len(sys.argv) < 2:
+if len(sys.argv) != 2:
     print('Usage: reconstruct_hyps.py [path to input]', file=sys.stderr)
     sys.exit(1)
 
@@ -27,17 +27,10 @@ for line_num in range(len(beam_lines)):
             id = parent_ids[j][id]
 
     sentence_tokens = [list(s) for s in sentence_tokens]
-    print(f"Sentence {line_num+1}")
-    for i, s in enumerate(sentence_tokens):
-        print(f"{i+1}) {' '.join(s)}")
-    #print(f"{[' '.join(s) for s in sentence_tokens]}")
+    print(f"{[' '.join(s) for s in sentence_tokens]}")
 
     # n = 3
     # for sentence in sentence_tokens:
     #     print(list(zip(*[sentence[i:] for i in range(n)])))
     #     break
-    if len(sys.argv) > 2:
-        if line_num >= int(sys.argv[2])-1:
-            break
-    else:
-        exit(0)
+    break

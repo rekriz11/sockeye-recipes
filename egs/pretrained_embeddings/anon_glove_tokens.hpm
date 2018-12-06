@@ -36,7 +36,7 @@
 
 ### User-specified directories ###
 workdir=$HOME/sockeye-recipes/egs/pretrained_embeddings
-modeldir=./model_tokens
+modeldir=/data2/text_simplification/models/model_tokens
 rootdir=$HOME/sockeye-recipes
 echo "ROOTDIR $rootdir"
 # DESCRIPTION: rs1: RNN-based seq2seq model, Small

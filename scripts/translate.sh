@@ -92,15 +92,13 @@ if [ "$SKIP_SRC_BPE" == 1 ]; then
     cat $INPUT_FILE | \
 	python -m sockeye.translate --models $modeldir $device \
 	--disable-device-locking \
-	--beam-size $BEAM_SIZE --use-cpu \
-    --beam-block-ngram 3 \
-    --beam-sibling-penalty 1 \
+	--beam-size $BEAM_SIZE \
   --max-input-len $max_input_len \
   --output-type $OUTPUT_TYPE \
   --beam-block-ngram $NGRAM_BLOCK \
   --single-hyp-max $SINGLE_HYP_MAX \
   --beam-sibling-penalty $BEAM_SIBLING_PENALTY | \
-	gsed -r 's/@@( |$)//g' > $OUTPUT_FILE 
+	sed -r 's/@@( |$)//g' > $OUTPUT_FILE 
 else
     ### Apply BPE to input, run Sockeye.translate, then de-BPE ###
     echo "Apply BPE to source input"
@@ -110,7 +108,7 @@ else
   --beam-size $BEAM_SIZE \
 	--max-input-len $max_input_len \
   --output-type $OUTPUT_TYPE | \
-	gsed -r 's/@@( |$)//g' > $OUTPUT_FILE
+	sed -r 's/@@( |$)//g' > $OUTPUT_FILE
 fi
 
 ##########################################

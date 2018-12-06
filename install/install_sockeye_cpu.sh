@@ -1,8 +1,7 @@
 #!/bin/bash
 set -e
 
-#SOCKEYE_COMMIT=5873da5bd640f862646ae59cf408ddcee1449777 # 1.18.15 (sockeye:master)
-SOCKEYE_COMMIT=master
+SOCKEYE_COMMIT=5873da5bd640f862646ae59cf408ddcee1449777 # 1.18.15 (sockeye:master)
 
 # Get this version of sockeye
 rootdir="$(readlink -f "$(dirname "$0")/../")"
