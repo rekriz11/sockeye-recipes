@@ -3,9 +3,9 @@ import csv
 import pandas as pd
 import scipy.stats as st
 
-# Assume that the last model is the one we're comparing against
 SYSTEMS = ["REFERENCE SIMPLE", "S2S", "HYBRID", \
            "DRESS-LS", "DMASS", "S2S-ALL-FAS", "S2S-ALL-FA"]
+OUR_MODEL_INDEX = len(SYSTEMS)-1
 ASPECTS = ['mean', 'simp', 'grammar']
 ALPHA = 0.05
 rd = 5 # number of digits to round to
@@ -48,26 +48,13 @@ def refactor(mturk_dict):
 
 def hyp_test(df):
     results = {}
-    for aspect in ASPECTS:
+    for aspect in ASPECTS + ['avg']:
         results[aspect] = []
-        s1 = df[(df['aspect'] == aspect) & (df['model'] == SYSTEMS[-1])]
-        deg = 2*len(s1)-2
-        for model in SYSTEMS[:len(SYSTEMS)-1]:
+        s1 = df[(df['aspect'] == aspect) & (df['model'] == SYSTEMS[OUR_MODEL_INDEX])]
+        for model in SYSTEMS:
             s2 = df[(df['aspect'] == aspect) & (df['model'] == model)]
-            diffs = s1['score'].reset_index(drop=True) - s2['score'].reset_index(drop=True)
-            std = diffs.std() * (2/len(s1))**0.5
             results[aspect].append((st.ttest_ind(s1['score'], s2['score']),
-                                    st.t.interval(1-ALPHA, deg, loc=diffs.mean(), scale=std)))
-
-    results['avg'] = []
-    s1 = df[(df['aspect'] == 'avg') & (df['model'] == SYSTEMS[-1])]
-    deg = 2*len(s1)-2
-    for model in SYSTEMS[:len(SYSTEMS)-1]:
-        s2 = df[(df['aspect'] == 'avg') & (df['model'] == model)]
-        diffs = s1['score'].reset_index(drop=True) - s2['score'].reset_index(drop=True)
-        std = diffs.std() * (2/len(s1))**0.5
-        results['avg'].append((st.ttest_ind(s1['score'], s2['score']),
-                               st.t.interval(1-ALPHA, deg, loc=diffs.mean(), scale=std)))
+                                    st.t.interval(1-ALPHA, len(s2)-1, loc=s2['score'].mean(), scale=s2['score'].std()/len(s2)**0.5)))
     return results
 
 
@@ -80,9 +67,13 @@ def main(mturk_file):
         for aspect, stats in results.items():
             outfile.write(f'===================\nResults for: {aspect}\n===================\n')
             for i, stat in enumerate(stats):
-                outfile.write(f'Versus {SYSTEMS[i]}: stat={round(stat[0][0], rd)}, '
-                              f'p-value={round(stat[0][1], rd)}, '
-                              f'conf=({round(stat[1][0], rd)}, {round(stat[1][1], rd)})\n')
+                margin = round((stat[1][1]-stat[1][0]) / 2, rd)
+                if i == OUR_MODEL_INDEX:
+                    outfile.write(f'{SYSTEMS[i]}: conf=({round(stat[1][0], rd)}, {round(stat[1][1], rd)}), margin={margin}\n')
+                else:
+                    outfile.write(f'Versus {SYSTEMS[i]}: stat={round(stat[0][0], rd)}, '
+                                f'p-value={round(stat[0][1], rd)}, '
+                                f'conf=({round(stat[1][0], rd)}, {round(stat[1][1], rd)}), margin={margin}\n')
     #df.to_csv('out.csv', index=False)
 
 
