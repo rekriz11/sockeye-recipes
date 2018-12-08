@@ -181,11 +181,11 @@ def main():
 
     sari_scores = list()
     for i in range(len(simplified_sentences)):
-        if i % 50 == 0:
+        if i % 100 == 0:
             print(i)
         ss = []
         for sent in simplified_sentences[i]:
-            ss.append(SARIsent(sent, complex_sentences[i], reference_sentences[i]))
+            ss.append(SARIsent(complex_sentences[i], sent, [reference_sentences[i]]))
         sari_scores.append(max(ss))
 
     sari_scores = np.array(sari_scores)

@@ -297,6 +297,7 @@ python ~/sockeye-recipes/new_scripts/cluster_rerank/rerank_2.py \
 1/3 1/3 1/3 \
 /data2/text_simplification/output/seq2seq_best_even.MODEL
 
+
 python ~/sockeye-recipes/new_scripts/cluster_rerank/rerank_2.py \
 /data2/text_simplification/embeddings/enwiki_dbow/doc2vec.bin \
 /data2/text_simplification/models/lm/lm-merged.kenlm \
@@ -306,28 +307,46 @@ python ~/sockeye-recipes/new_scripts/cluster_rerank/rerank_2.py \
 1/2 0 1/2 \
 /data2/text_simplification/output/seq2seq_best_0.5_0_0.5.BEST_MODEL
 
-python ~/sockeye-recipes/new_scripts/cluster_rerank/rerank_perp.py \
-/data2/text_simplification/models/lm/lm-merged.kenlm \
-~/sockeye-recipes/egs/pretrained_embeddings/output/best.100beam.20centroids \
-/data2/text_simplification/output_test/seq2seq_best.BEST_MODEL_1_0_0
-
 ## Calculate SARI score
 python ~/sockeye-recipes/SARI/sari_old.py \
 -c /data2/text_simplification/output/newsela_complex.REFERENCE \
 -r /data2/text_simplification/output/newsela_simple.REFERENCE \
 -s /data2/text_simplification/output/seq2seq_best_0.5_0_0.5.BEST_MODEL
 
-python ~/sockeye-recipes/SARI/sari_TEST.py \
--c /data2/text_simplification/output/newsela_complex.REFERENCE \
--r /data2/text_simplification/output/newsela_simple.REFERENCE \
--s /data2/text_simplification/output/newsela_simple.REFERENCE
 
-python ~/sockeye-recipes/SARI/sari_old.py \
--c /data2/text_simplification/output/newsela_complex.REFERENCE \
--r /data2/text_simplification/output/newsela_simple.REFERENCE \
--s /data2/text_simplification/output/dress-ls.BASELINE
+########################################################
+## 7. Enforcing length constraint to best model output
+########################################################
 
-python ~/sockeye-recipes/SARI/sari_old.py \
--c /data2/text_simplification/output/newsela_complex.REFERENCE \
--r /data2/text_simplification/output/newsela_simple.REFERENCE \
--s /data2/text_simplification/output/hybrid.BASELINE
+python ~/sockeye-recipes/new_scripts/cluster_rerank/rerank_match_dress.py \
+/data2/text_simplification/embeddings/enwiki_dbow/doc2vec.bin \
+/data2/text_simplification/models/lm/lm-merged.kenlm \
+~/sockeye-recipes/egs/pretrained_embeddings/output/best.100beam.20centroids.preds \
+~/sockeye-recipes/egs/pretrained_embeddings/output/best.100beam.20centroids \
+~/sockeye-recipes/egs/pretrained_embeddings/data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.src \
+1/2 0 1/2 \
+/data2/text_simplification/output/dress-ls.BASELINE \
+0 \
+/data2/text_simplification/output/seq2seq_best.MATCH_DRESS0
+
+python ~/sockeye-recipes/new_scripts/cluster_rerank/rerank_match_dress.py \
+/data2/text_simplification/embeddings/enwiki_dbow/doc2vec.bin \
+/data2/text_simplification/models/lm/lm-merged.kenlm \
+~/sockeye-recipes/egs/pretrained_embeddings/output/best.100beam.20centroids.preds \
+~/sockeye-recipes/egs/pretrained_embeddings/output/best.100beam.20centroids \
+~/sockeye-recipes/egs/pretrained_embeddings/data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.src \
+1/2 0 1/2 \
+/data2/text_simplification/output/dress-ls.BASELINE \
+2 \
+/data2/text_simplification/output/seq2seq_best.MATCH_DRESS2
+
+python ~/sockeye-recipes/new_scripts/cluster_rerank/rerank_match_dress.py \
+/data2/text_simplification/embeddings/enwiki_dbow/doc2vec.bin \
+/data2/text_simplification/models/lm/lm-merged.kenlm \
+~/sockeye-recipes/egs/pretrained_embeddings/output/best.100beam.20centroids.preds \
+~/sockeye-recipes/egs/pretrained_embeddings/output/best.100beam.20centroids \
+~/sockeye-recipes/egs/pretrained_embeddings/data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.src \
+1/2 0 1/2 \
+/data2/text_simplification/output/dress-ls.BASELINE \
+-2 \
+/data2/text_simplification/output/seq2seq_best.MATCH_DRESS-2

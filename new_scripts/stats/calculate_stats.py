@@ -59,7 +59,11 @@ def process_simple_file(simple_fn):
 
     write_out_str(simple_fn)
     avg_length = sum([len(sent.split(' ')) for sent in simple_sents]) / n
-    write_out_stat('Length', avg_length)
+    write_out_stat('Sentence Length', avg_length)
+
+    word_length = sum([sum([len(w) for w in sent.split(' ')])/len(sent.split(' ')) for sent in simple_sents]) / n
+    write_out_stat('Word Length', word_length)
+    
     avg_fkscore = sum([textstat.flesch_kincaid_grade(sent) for sent in simple_sents]) / n
     write_out_stat('Flesch-Kincaid', avg_fkscore)
 
