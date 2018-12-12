@@ -1,0 +1,16 @@
+Steps Probabilistic Sampling:
+1. Setup sockeye and sockeye-recipes
+
+
+New Parameters:
+g: STOCHASTIC_SEARCH
+	0 - false (default)
+	1 - true
+q: STOCHASTIC_SEARCH_SIZE (used only when g = 1)
+	10 - default
+z: NUM_TRANSLATIONS (can be used independently too)
+	1 - default
+    Writes tab separated translations in same file.
+
+Command:
+bash ~/text_simplification/sockeye-recipes/scripts/translate.sh -p anon_glove_tokens.hpm -i data/newsela_Zhang_Lapata_splits/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.src.aner_less -o output/tokens.1best_greedy -e sockeye_gpu_57 -b 1 -t translation -n 3 -m 0 -y 0 -g 1 -q 2 -z 1 -s
