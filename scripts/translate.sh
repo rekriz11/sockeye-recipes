@@ -24,8 +24,11 @@ function check_file_exists() {
 }
 
 BEAM_SIZE=1
+STOCHASTIC_SEARCH=0
+STOCHASTIC_SEARCH_SIZE=10
+NUM_TRANSLATIONS=1
 
-while getopts ":h?p:e:i:o:d:b:t:n:m:y:s" opt; do
+while getopts ":h?p:e:i:o:d:b:t:n:m:y:g:q:z:s" opt; do
   case "$opt" in
     h|\?)
       show_help
@@ -53,8 +56,15 @@ while getopts ":h?p:e:i:o:d:b:t:n:m:y:s" opt; do
       ;;
     y) BEAM_SIBLING_PENALTY=$OPTARG
       ;;
+    g) STOCHASTIC_SEARCH=$OPTARG
+      ;;
+    q) STOCHASTIC_SEARCH_SIZE=$OPTARG
+      ;;
+    z) NUM_TRANSLATIONS=$OPTARG
+      ;;
   esac
 done
+
 
 if [[ -z $HYP_FILE || -z $ENV_NAME || -z $INPUT_FILE || -z $OUTPUT_FILE ]]; then
     errcho "Missing arguments"
@@ -97,7 +107,10 @@ if [ "$SKIP_SRC_BPE" == 1 ]; then
   --output-type $OUTPUT_TYPE \
   --beam-block-ngram $NGRAM_BLOCK \
   --single-hyp-max $SINGLE_HYP_MAX \
-  --beam-sibling-penalty $BEAM_SIBLING_PENALTY | \
+  --beam-sibling-penalty $BEAM_SIBLING_PENALTY \
+  --stochastic-search $STOCHASTIC_SEARCH \
+  --stochastic-search-size $STOCHASTIC_SEARCH_SIZE \
+  --num-translations $NUM_TRANSLATIONS | \
 	sed -r 's/@@( |$)//g' > $OUTPUT_FILE 
 else
     ### Apply BPE to input, run Sockeye.translate, then de-BPE ###
