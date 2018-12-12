@@ -23,16 +23,20 @@ def SARIngram(sgrams, cgrams, rgramslist, numref):
     cgramcounter_rep = Counter()
     for cgram, ccount in cgramcounter.items():
         cgramcounter_rep[cgram] = ccount * numref
-    '''
-    print(sgramcounter_rep)
+        
+    print("COMPLEX SENTENCE: " + str(sgramcounter_rep))
     print(rgramcounter)
     print(cgramcounter_rep)
-    '''
 
     # KEEP
     keepgramcounter_rep = sgramcounter_rep & cgramcounter_rep
     keepgramcountergood_rep = keepgramcounter_rep & rgramcounter
     keepgramcounterall_rep = sgramcounter_rep & rgramcounter
+
+    print("KEEP...")
+    print(keepgramcounter_rep)
+    print(keepgramcountergood_rep)
+    print(keepgramcounterall_rep)
 
     keeptmpscore1 = 0
     keeptmpscore2 = 0
@@ -59,13 +63,10 @@ def SARIngram(sgrams, cgrams, rgramslist, numref):
     delgramcountergood_rep = delgramcounter_rep - (rgramcounter - cgramcounter_rep)
     delgramcounterall_rep = sgramcounter_rep - rgramcounter
 
-    '''
     print("DELETION...")
     print(delgramcounter_rep)
-    print(rgramcounter)
-    print(rgramcounter - cgramcounter_rep)
-    print(delgramcounter_rep - (rgramcounter - cgramcounter_rep))
-    '''
+    print(delgramcountergood_rep)
+    print(delgramcounterall_rep)
     
     deltmpscore1 = 0
     deltmpscore2 = 0
@@ -88,16 +89,19 @@ def SARIngram(sgrams, cgrams, rgramslist, numref):
     if delscore_precision > 0 or delscore_recall > 0:
         delscore = 2 * delscore_precision * delscore_recall / (delscore_precision + delscore_recall)
 
-    '''
     print(delscore_precision)
     print(delscore_recall)
-    '''
 
 
     # ADDITION
     addgramcounter = set(cgramcounter) - set(sgramcounter)
     addgramcountergood = set(addgramcounter) & set(rgramcounter)
     addgramcounterall = set(rgramcounter) - set(sgramcounter)
+
+    print("ADDITION...")
+    print(addgramcounter)
+    print(addgramcountergood)
+    print(addgramcounterall)
 
     addtmpscore = 0
     for addgram in addgramcountergood:
@@ -180,44 +184,38 @@ def SARIsent(ssent, csent, rsents):
             c4grams.append(c4gram)
 
     (keep1score, del1score, add1score) = SARIngram(s1grams, c1grams, r1gramslist, numref)
-    '''
     print("UNIGRAM SCORES:")
     print(keep1score)
     print(del1score)
     print(add1score)
-    '''
+
     (keep2score, del2score, add2score) = SARIngram(s2grams, c2grams, r2gramslist, numref)
-    '''
     print("BIGRAM SCORES:")
     print(keep2score)
     print(del2score)
     print(add2score)
-    '''
+
     (keep3score, del3score, add3score) = SARIngram(s3grams, c3grams, r3gramslist, numref)
-    '''
     print("TRIGRAM SCORES:")
     print(keep3score)
     print(del3score)
     print(add3score)
-    '''
+
     (keep4score, del4score, add4score) = SARIngram(s4grams, c4grams, r4gramslist, numref)
-    '''
     print("4-gram SCORES:")
     print(keep4score)
     print(del4score)
     print(add4score)
-    '''
+
     avgkeepscore = sum([keep1score,keep2score,keep3score,keep4score])/4
     avgdelscore = sum([del1score, del2score, del3score, del4score]) / 4
     avgaddscore = sum([add1score, add2score, add3score, add4score]) / 4
     finalscore = (avgkeepscore + avgdelscore + avgaddscore) / 3
-    '''
     print("FINAL SCORES:")
     print(avgkeepscore)
     print(avgdelscore)
     print(avgaddscore)
     print(finalscore)
-    '''
 
     return finalscore
 
@@ -233,14 +231,14 @@ def main():
 
     args = parser.parse_args()
 
-    complex_sentences = ReadInFile(args.complex)
-    reference_sentences = ReadInFile(args.reference)
-    simplified_sentences = ReadInFile(args.simplified)
+    complex_sentences = ReadInFile(args.complex)[:1]
+    reference_sentences = ReadInFile(args.reference)[:1]
+    simplified_sentences = ReadInFile(args.simplified)[:1]
 
     sari_scores = list()
     for i in range(len(simplified_sentences)):
         sari_scores.append(SARIsent(complex_sentences[i], simplified_sentences[i], [reference_sentences[i]]))
-        ##print("\n\n")
+        print("\n\n")
 
     sari_scores = np.array(sari_scores)
     print('SARI score: {}'.format(np.mean(sari_scores)))

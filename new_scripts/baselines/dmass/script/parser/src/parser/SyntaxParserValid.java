@@ -15,7 +15,7 @@ import edu.stanford.nlp.ling.SentenceUtils;
 import edu.stanford.nlp.parser.lexparser.LexicalizedParser;
 import edu.stanford.nlp.trees.Tree;
 
-public class SyntaxParser {
+public class SyntaxParserValid {
 
 	private String generate_tree(Tree node, StringBuilder sb_output) {
 		if (node.children().length == 0) {
@@ -45,10 +45,10 @@ public class SyntaxParser {
 				"/home/rekriz/sockeye-recipes/new_scripts/baselines/dmass/data/newsela/valid/syntax.txt")));
 //				"/Users/zhaosanqiang916/git/text_simplification_data/train/dress/wikismall/PWKP_108016.tag.80.aner.train.src.jsyntax")));
 		BufferedReader reader = new BufferedReader(new FileReader(new File(
-				"/home/rekriz/sockeye-recipes/new_scripts/baselines/dmass/data/newsela/valid/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.valid.src")));
+				"/home/rekriz/sockeye-recipes/new_scripts/baselines/dmass/data/newsela/valid/valid.aner.src")));
 //				"/Users/zhaosanqiang916/git/text_simplification_data/train/dress/wikismall/PWKP_108016.tag.80.aner.train.src")));
 		String line = null;
-		SyntaxParser test = new SyntaxParser();
+		SyntaxParserValid test = new SyntaxParserValid();
 		int cnt = 0;
 		StringBuilder output = new StringBuilder();
 		long pre_time = System.currentTimeMillis();

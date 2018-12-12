@@ -1,0 +1,329 @@
+#############################################
+## TO RUN ALL SEQ2SEQ EXPERIMENTS
+## USING MODELS TRAINED ON NEWSELA-V2
+#############################################
+
+#############################################
+## 1. BEFORE DECODING
+#############################################
+
+## Clone github repositories
+cd ~
+git clone https://github.com/rekriz11/sockeye-recipes.git
+git clone https://github.com/rekriz11/sockeye.git
+
+## Remove previous sockeye environment (if previously installed)
+conda remove --name sockeye_gpu_57 --all
+
+## Install sockeye from our repository
+~/sockeye-recipes/install/install_sockeye_custom_57.sh -s ~/sockeye -e sockeye_gpu_57
+
+## Copy models from Reno's directory to yours!
+cp -r /home/rekriz/sockeye-recipes/egs/pretrained_embeddings/models/model_v2/ \
+~/sockeye-recipes/egs/pretrained_embeddings/models/
+cp -r /home/rekriz/sockeye-recipes/egs/pretrained_embeddings/models/model_loss_v2_2.0/ \
+~/sockeye-recipes/egs/pretrained_embeddings/models/
+
+## Add cuda 8.0 to your library path
+export LD_LIBRARY_PATH=/usr/local/cuda-8.0/lib64
+
+#############################################
+## 1. Seq2Seq Greedy Search Baseline
+#############################################
+
+## Translates from model
+bash ~/sockeye-recipes/scripts/translate.sh \
+-p ~/sockeye-recipes/egs/pretrained_embeddings/anon_glove_v2.hpm \
+-i ~/sockeye-recipes/egs/pretrained_embeddings/data/newsela_v2/test.aner.src \
+-o ~/sockeye-recipes/egs/pretrained_embeddings/output_v2/seq2seq_greedy.anon \
+-e sockeye_gpu_57 \
+-b 1 \
+-t translation \
+-n 3 \
+-m 0 \
+-y 0 \
+-s
+
+## Deanonymizes sentences
+python ~/sockeye-recipes/new_scripts/cluster_rerank/deanonymize_v2.py \
+~/sockeye-recipes/egs/pretrained_embeddings/output_v2/seq2seq_greedy.anon \
+~/sockeye-recipes/egs/pretrained_embeddings/data/newsela_v2/test.src.aner_map \
+/data2/text_simplification/output_v2/seq2seq_greedy.BASELINE
+
+## Calculates SARI
+python ~/sockeye-recipes/SARI/sari_old.py \
+-c /data2/text_simplification/output_v2/newsela_complex.REFERENCE \
+-r /data2/text_simplification/output_v2/newsela_simple.REFERENCE \
+-s /data2/text_simplification/output_v2/seq2seq_greedy.BASELINE
+
+
+#############################################
+## 2. Seq2Seq Simplified Loss, Greedy Search
+#############################################
+
+## Translates from model
+bash ~/sockeye-recipes/scripts/translate.sh \
+-p ~/sockeye-recipes/egs/pretrained_embeddings/anon_glove_loss_v2_2.0.hpm \
+-i ~/sockeye-recipes/egs/pretrained_embeddings/data/newsela_v2/test.aner.src \
+-o ~/sockeye-recipes/egs/pretrained_embeddings/output_v2/loss_greedy.anon \
+-e sockeye_gpu_57 \
+-b 1 \
+-t translation \
+-n 3 \
+-m 0 \
+-y 0 \
+-s
+
+## Deanonymizes sentences
+python ~/sockeye-recipes/new_scripts/cluster_rerank/deanonymize_v2.py \
+~/sockeye-recipes/egs/pretrained_embeddings/output_v2/loss_greedy.anon \
+~/sockeye-recipes/egs/pretrained_embeddings/data/newsela_v2/test.src.aner_map \
+/data2/text_simplification/output_v2/loss_greedy.MODEL
+
+## Calculate SARI score
+python ~/sockeye-recipes/SARI/sari_old.py \
+-c /data2/text_simplification/output_v2/newsela_complex.REFERENCE \
+-r /data2/text_simplification/output_v2/newsela_simple.REFERENCE \
+-s /data2/text_simplification/output_v2/loss_greedy.MODEL
+
+
+#####################################
+## 3. Seq2Seq Beam Search, Reranking
+#####################################
+
+## Translates and stores beam histories
+bash ~/sockeye-recipes/scripts/translate.sh \
+-p ~/sockeye-recipes/egs/pretrained_embeddings/anon_glove_v2.hpm \
+-i ~/sockeye-recipes/egs/pretrained_embeddings/data/newsela_v2/test.aner.src \
+-o ~/sockeye-recipes/egs/pretrained_embeddings/output_v2/tokens.history_100beam \
+-e sockeye_gpu_57 \
+-b 100 \
+-t beam_store \
+-n 3 \
+-m 0 \
+-y 0 \
+-s
+
+## Gets actual candidates
+python3 ~/sockeye-recipes/new_scripts/print_nbest/output_nbest.py \
+-d ~/sockeye-recipes/egs/pretrained_embeddings/output_v2/tokens.history_100beam \
+-o ~/sockeye-recipes/egs/pretrained_embeddings/output_v2/tokens.100best
+
+## Deanonymizes candidates
+python ~/sockeye-recipes/new_scripts/cluster_rerank/deanonymize_v2.py \
+~/sockeye-recipes/egs/pretrained_embeddings/output_v2/tokens.100best \
+~/sockeye-recipes/egs/pretrained_embeddings/data/newsela_v2/test.src.aner_map \
+~/sockeye-recipes/egs/pretrained_embeddings/output_v2/tokens.100best.deanon
+
+## Generates sentence complexity predictions for each sentence
+source ~/venvs/demo/bin/activate
+cd ~/sockeye-recipes/new_scripts/predict_sentence_level/CNN-sentence-classification-pytorch-master/
+python3 ~/sockeye-recipes/new_scripts/predict_sentence_level/CNN-sentence-classification-pytorch-master/run_preds.py \
+--mode test \
+--model non-static \
+--datafile /data1/reno/newsela_splits/newsela_sents \
+--epoch 20 \
+--gpu 0 \
+--cands ~/sockeye-recipes/egs/pretrained_embeddings/output_v2/tokens.100best.deanon \
+--outfile ~/sockeye-recipes/egs/pretrained_embeddings/output_v2/tokens.100best.preds \
+--early_stopping
+
+## Reranks candidates using perplexity, simplicity, and relevancy
+python ~/sockeye-recipes/new_scripts/cluster_rerank/rerank_2.py \
+/data2/text_simplification/embeddings/enwiki_dbow/doc2vec.bin \
+/data2/text_simplification/models/lm/lm-merged.kenlm \
+~/sockeye-recipes/egs/pretrained_embeddings/output_v2/tokens.100best.preds \
+~/sockeye-recipes/egs/pretrained_embeddings/output_v2/tokens.100best.deanon \
+/data2/text_simplification/output_v2/newsela_complex.REFERENCE \
+1/3 1/3 1/3 \
+/data2/text_simplification/output_v2/seq2seq_rerank.MODEL
+
+## Reranks candidates using perplexity, simplicity, and relevancy
+python ~/sockeye-recipes/new_scripts/cluster_rerank/rerank_perp.py \
+/data2/text_simplification/models/lm/lm-merged.kenlm \
+~/sockeye-recipes/egs/pretrained_embeddings/output_v2/tokens.100best.deanon \
+/data2/text_simplification/output_v2/seq2seq_rerank_perp.MODEL
+
+## Calculate SARI score
+python3 ~/sockeye-recipes/SARI/sari_old.py \
+-c /data2/text_simplification/output_v2/newsela_complex.REFERENCE \
+-r /data2/text_simplification/output_v2/newsela_simple.REFERENCE \
+-s /data2/text_simplification/output_v2/seq2seq_rerank.MODEL
+
+
+#####################################################
+## 4. Seq2Seq Beam Search, Clustering, Reranking
+#####################################################
+
+source ~/venvs/demo/bin/activate
+
+## Clusters sentences
+python ~/sockeye-recipes/new_scripts/cluster_rerank/cluster_v2.py \
+/data2/text_simplification/embeddings/enwiki_dbow/doc2vec.bin \
+~/sockeye-recipes/egs/pretrained_embeddings/output_v2/tokens.100best \
+~/sockeye-recipes/egs/pretrained_embeddings/data/newsela_v2/test.src.aner_map \
+20 \
+~/sockeye-recipes/egs/pretrained_embeddings/output_v2/tokens.100beam.20centroids
+
+## Generates sentence complexity predictions for each sentence
+cd ~/sockeye-recipes/new_scripts/predict_sentence_level/CNN-sentence-classification-pytorch-master/
+python3 ~/sockeye-recipes/new_scripts/predict_sentence_level/CNN-sentence-classification-pytorch-master/run_preds.py \
+--mode test \
+--model non-static \
+--datafile /data1/reno/newsela_splits/newsela_sents \
+--epoch 20 \
+--gpu 0 \
+--cands ~/sockeye-recipes/egs/pretrained_embeddings/output_v2/tokens.100beam.20centroids \
+--outfile ~/sockeye-recipes/egs/pretrained_embeddings/output_v2/tokens.100beam.20centroids.preds \
+--early_stopping
+
+## Rerank based on perplexity, relevancy, and simplicity equally
+python ~/sockeye-recipes/new_scripts/cluster_rerank/rerank_2.py \
+/data2/text_simplification/embeddings/enwiki_dbow/doc2vec.bin \
+/data2/text_simplification/models/lm/lm-merged.kenlm \
+~/sockeye-recipes/egs/pretrained_embeddings/output_v2/tokens.100beam.20centroids.preds \
+~/sockeye-recipes/egs/pretrained_embeddings/output_v2/tokens.100beam.20centroids \
+/data2/text_simplification/output_v2/newsela_complex.REFERENCE  \
+1/3 1/3 1/3 \
+/data2/text_simplification/output_v2/seq2seq_cluster_rerank.MODEL
+
+## Rerank based on perplexity
+python ~/sockeye-recipes/new_scripts/cluster_rerank/rerank_perp.py \
+/data2/text_simplification/models/lm/lm-merged.kenlm \
+~/sockeye-recipes/egs/pretrained_embeddings/output_v2/tokens.100beam.20centroids \
+/data2/text_simplification/output_v2/seq2seq_cluster_rerank_perp.MODEL
+
+## Calculate SARI score
+python ~/sockeye-recipes/SARI/sari_old.py \
+-c /data2/text_simplification/output_v2/newsela_complex.REFERENCE \
+-r /data2/text_simplification/output_v2/newsela_simple.REFERENCE \
+-s /data2/text_simplification/output_v2/seq2seq_cluster_rerank.MODEL
+
+
+##################################################
+## 5. Seq2Seq Diverse Beam Search, Reranking
+##################################################
+
+## Translates and stores beam histories
+bash ~/sockeye-recipes/scripts/translate.sh \
+-p ~/sockeye-recipes/egs/pretrained_embeddings/anon_glove_v2.hpm \
+-i ~/sockeye-recipes/egs/pretrained_embeddings/data/newsela_v2/test.aner.src \
+-o ~/sockeye-recipes/egs/pretrained_embeddings/output_v2/diverse.history_100beam \
+-e sockeye_gpu_57 \
+-b 100 \
+-t beam_store \
+-n 3 \
+-m 0 \
+-y 1.0 \
+-s
+
+## Gets actual candidates
+python3 ~/sockeye-recipes/new_scripts/print_nbest/output_nbest.py \
+-d ~/sockeye-recipes/egs/pretrained_embeddings/output_v2/diverse.history_100beam \
+-o ~/sockeye-recipes/egs/pretrained_embeddings/output_v2/diverse.100best
+
+## Deanonymizes candidates
+python ~/sockeye-recipes/new_scripts/cluster_rerank/deanonymize_v2.py \
+~/sockeye-recipes/egs/pretrained_embeddings/output_v2/diverse.100best \
+~/sockeye-recipes/egs/pretrained_embeddings/data/newsela_v2/test.src.aner_map \
+~/sockeye-recipes/egs/pretrained_embeddings/output_v2/diverse.100best.deanon
+
+## Generates sentence complexity predictions for each sentence
+source ~/venvs/demo/bin/activate
+cd ~/sockeye-recipes/new_scripts/predict_sentence_level/CNN-sentence-classification-pytorch-master/
+python3 ~/sockeye-recipes/new_scripts/predict_sentence_level/CNN-sentence-classification-pytorch-master/run_preds.py \
+--mode test \
+--model non-static \
+--datafile /data1/reno/newsela_splits/newsela_sents \
+--epoch 20 \
+--gpu 0 \
+--cands ~/sockeye-recipes/egs/pretrained_embeddings/output_v2/diverse.100best.deanon \
+--outfile ~/sockeye-recipes/egs/pretrained_embeddings/output_v2/diverse.100best.preds \
+--early_stopping
+
+## Reranks candidates using perplexity, simplicity, and relevancy
+python ~/sockeye-recipes/new_scripts/cluster_rerank/rerank_2.py \
+/data2/text_simplification/embeddings/enwiki_dbow/doc2vec.bin \
+/data2/text_simplification/models/lm/lm-merged.kenlm \
+~/sockeye-recipes/egs/pretrained_embeddings/output_v2/diverse.100best.preds \
+~/sockeye-recipes/egs/pretrained_embeddings/output_v2/diverse.100best.deanon \
+/data2/text_simplification/output_v2/newsela_complex.REFERENCE \
+1/3 1/3 1/3 \
+/data2/text_simplification/output_v2/seq2seq_diverse_rerank.MODEL
+
+## Reranks candidates using perplexity, simplicity, and relevancy
+python ~/sockeye-recipes/new_scripts/cluster_rerank/rerank_perp.py \
+/data2/text_simplification/models/lm/lm-merged.kenlm \
+~/sockeye-recipes/egs/pretrained_embeddings/output_v2/diverse.100best.deanon \
+/data2/text_simplification/output_v2/seq2seq_diverse_rerank_perp.MODEL
+
+## Calculate SARI score
+python ~/sockeye-recipes/SARI/sari.py \
+-c /data2/text_simplification/output_v2/newsela_complex.REFERENCE \
+-r /data2/text_simplification/output_v2/newsela_simple.REFERENCE \
+-s /data2/text_simplification/output_v2/seq2seq_diverse_rerank.MODEL
+
+
+##########################################################################
+## 6. Seq2Seq Simplified Loss, Diverse Beam Search, Clustering, Reranking
+##########################################################################
+
+## Translates and stores beam histories
+bash ~/sockeye-recipes/scripts/translate.sh \
+-p ~/sockeye-recipes/egs/pretrained_embeddings/anon_glove_loss_v2_2.0.hpm \
+-i ~/sockeye-recipes/egs/pretrained_embeddings/data/newsela_v2/test.aner.src \
+-o ~/sockeye-recipes/egs/pretrained_embeddings/output_v2/best.history_100beam \
+-e sockeye_gpu_57 \
+-b 100 \
+-t beam_store \
+-n 3 \
+-m 0 \
+-y 1.0 \
+-s
+
+## Gets actual candidates
+python3 ~/sockeye-recipes/new_scripts/print_nbest/output_nbest.py \
+-d ~/sockeye-recipes/egs/pretrained_embeddings/output_v2/best.history_100beam \
+-o ~/sockeye-recipes/egs/pretrained_embeddings/output_v2/best.100best
+
+## Clusters sentences
+source ~/venvs/demo/bin/activate
+python ~/sockeye-recipes/new_scripts/cluster_rerank/cluster_v2.py \
+/data2/text_simplification/embeddings/enwiki_dbow/doc2vec.bin \
+~/sockeye-recipes/egs/pretrained_embeddings/output_v2/tokens.100best \
+~/sockeye-recipes/egs/pretrained_embeddings/data/newsela_v2/test.src.aner_map \
+20 \
+~/sockeye-recipes/egs/pretrained_embeddings/output_v2/best.100beam.20centroids
+
+## Generates sentence complexity predictions for each sentence
+cd ~/sockeye-recipes/new_scripts/predict_sentence_level/CNN-sentence-classification-pytorch-master/
+python3 ~/sockeye-recipes/new_scripts/predict_sentence_level/CNN-sentence-classification-pytorch-master/run_preds.py \
+--mode test \
+--model non-static \
+--datafile /data1/reno/newsela_splits/newsela_sents \
+--epoch 20 \
+--gpu 0 \
+--cands ~/sockeye-recipes/egs/pretrained_embeddings/output_v2/best.100beam.20centroids \
+--outfile ~/sockeye-recipes/egs/pretrained_embeddings/output_v2/best.100beam.20centroids.preds \
+--early_stopping
+
+## Reranks candidates using perplexity, simplicity, and relevancy
+python ~/sockeye-recipes/new_scripts/cluster_rerank/rerank_2.py \
+/data2/text_simplification/embeddings/enwiki_dbow/doc2vec.bin \
+/data2/text_simplification/models/lm/lm-merged.kenlm \
+~/sockeye-recipes/egs/pretrained_embeddings/output_v2/best.100beam.20centroids.preds \
+~/sockeye-recipes/egs/pretrained_embeddings/output_v2/best.100beam.20centroids \
+/data2/text_simplification/output_v2/newsela_complex.REFERENCE \
+1/2 0 1/2 \
+/data2/text_simplification/output_v2/seq2seq_best_0.5_0_0.5.BEST_MODEL
+
+## Calculate SARI score
+python ~/sockeye-recipes/SARI/sari_old.py \
+-c /data2/text_simplification/output_v2/newsela_complex.REFERENCE \
+-r /data2/text_simplification/output_v2/newsela_simple.REFERENCE \
+-s /data2/text_simplification/output_v2/seq2seq_best_0.5_0_0.5.BEST_MODEL
+
+python ~/sockeye-recipes/SARI/sari_old.py \
+-c /data2/text_simplification/output_v2/newsela_complex.REFERENCE \
+-r /data2/text_simplification/output_v2/newsela_simple.REFERENCE \
+-s /data2/text_simplification/output_v2/seq2seq_best_perp.MODEL

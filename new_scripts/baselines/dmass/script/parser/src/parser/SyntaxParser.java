@@ -45,7 +45,7 @@ public class SyntaxParser {
 				"/home/rekriz/sockeye-recipes/new_scripts/baselines/dmass/data/newsela/test/syntax.txt")));
 //				"/Users/zhaosanqiang916/git/text_simplification_data/train/dress/wikismall/PWKP_108016.tag.80.aner.train.src.jsyntax")));
 		BufferedReader reader = new BufferedReader(new FileReader(new File(
-				"/home/rekriz/sockeye-recipes/new_scripts/baselines/dmass/data/newsela/test/V0V4_V1V4_V2V4_V3V4_V0V3_V0V2_V1V3.aner.ori.test.src")));
+				"/home/rekriz/sockeye-recipes/new_scripts/baselines/dmass/data/newsela/test/test.aner.src")));
 //				"/Users/zhaosanqiang916/git/text_simplification_data/train/dress/wikismall/PWKP_108016.tag.80.aner.train.src")));
 		String line = null;
 		SyntaxParser test = new SyntaxParser();

@@ -1,0 +1,3 @@
+#### Analyzing results README
+cd <path-to-sockeye-recipes>
+python new_scripts/human_eval/analyze_results.py

@@ -23,11 +23,6 @@ def SARIngram(sgrams, cgrams, rgramslist, numref):
     cgramcounter_rep = Counter()
     for cgram, ccount in cgramcounter.items():
         cgramcounter_rep[cgram] = ccount * numref
-    '''
-    print(sgramcounter_rep)
-    print(rgramcounter)
-    print(cgramcounter_rep)
-    '''
 
     # KEEP
     keepgramcounter_rep = sgramcounter_rep & cgramcounter_rep
@@ -41,14 +36,10 @@ def SARIngram(sgrams, cgrams, rgramslist, numref):
         keeptmpscore2 += keepgramcountergood_rep[keepgram] / keepgramcounterall_rep[keepgram]
         # print "KEEP", keepgram, keepscore, cgramcounter[keepgram], sgramcounter[keepgram], rgramcounter[keepgram]
     keepscore_precision = 0
-    if keeptmpscore1 == 0 and len(keepgramcounter_rep) == 0:
-        keepscore_precision = 1
-    elif len(keepgramcounter_rep) > 0:
+    if len(keepgramcounter_rep) > 0:
         keepscore_precision = keeptmpscore1 / len(keepgramcounter_rep)
-    keepscore_recall = 0 
-    if keeptmpscore2 == 0 and len(keepgramcounterall_rep) == 0:
-        keepscore_recall = 1
-    elif len(keepgramcounterall_rep) > 0:
+    keepscore_recall = 0
+    if len(keepgramcounterall_rep) > 0:
         keepscore_recall = keeptmpscore2 / len(keepgramcounterall_rep)
     keepscore = 0
     if keepscore_precision > 0 or keepscore_recall > 0:
@@ -56,43 +47,22 @@ def SARIngram(sgrams, cgrams, rgramslist, numref):
 
     # DELETION
     delgramcounter_rep = sgramcounter_rep - cgramcounter_rep
-    delgramcountergood_rep = delgramcounter_rep - (rgramcounter - cgramcounter_rep)
+    delgramcountergood_rep = delgramcounter_rep - rgramcounter
     delgramcounterall_rep = sgramcounter_rep - rgramcounter
-
-    '''
-    print("DELETION...")
-    print(delgramcounter_rep)
-    print(rgramcounter)
-    print(rgramcounter - cgramcounter_rep)
-    print(delgramcounter_rep - (rgramcounter - cgramcounter_rep))
-    '''
-    
     deltmpscore1 = 0
     deltmpscore2 = 0
     for delgram in delgramcountergood_rep:
         deltmpscore1 += delgramcountergood_rep[delgram] / delgramcounter_rep[delgram]
         deltmpscore2 += delgramcountergood_rep[delgram] / delgramcounterall_rep[delgram]
     delscore_precision = 0
-    if deltmpscore1 == 0 and len(delgramcounter_rep) == 0:
-        delscore_precision = 1
-    elif len(delgramcounter_rep) > 0:
+    if len(delgramcounter_rep) > 0:
         delscore_precision = deltmpscore1 / len(delgramcounter_rep)
-        
     delscore_recall = 0
-    if deltmpscore2 == 0 and len(delgramcounterall_rep) == 0:
-        delscore_recall = 1
-    elif len(delgramcounterall_rep) > 0:
-        delscore_recall = deltmpscore2 / len(delgramcounterall_rep)
-        
+    if len(delgramcounterall_rep) > 0:
+        delscore_recall = deltmpscore1 / len(delgramcounterall_rep)
     delscore = 0
     if delscore_precision > 0 or delscore_recall > 0:
         delscore = 2 * delscore_precision * delscore_recall / (delscore_precision + delscore_recall)
-
-    '''
-    print(delscore_precision)
-    print(delscore_recall)
-    '''
-
 
     # ADDITION
     addgramcounter = set(cgramcounter) - set(sgramcounter)
@@ -102,18 +72,13 @@ def SARIngram(sgrams, cgrams, rgramslist, numref):
     addtmpscore = 0
     for addgram in addgramcountergood:
         addtmpscore += 1
+
     addscore_precision = 0
-    if addtmpscore == 0 and len(addgramcounter) == 0:
-        addscore_precision = 1
-    elif len(addgramcounter) > 0:
-        addscore_precision = addtmpscore / len(addgramcounter)
-        
     addscore_recall = 0
-    if addtmpscore == 0 and len(addgramcounterall) == 0:
-        addscore_recall = 1
-    elif len(addgramcounterall) > 0:
+    if len(addgramcounter) > 0:
+        addscore_precision = addtmpscore / len(addgramcounter)
+    if len(addgramcounterall) > 0:
         addscore_recall = addtmpscore / len(addgramcounterall)
-        
     addscore = 0
     if addscore_precision > 0 or addscore_recall > 0:
         addscore = 2 * addscore_precision * addscore_recall / (addscore_precision + addscore_recall)
@@ -137,6 +102,7 @@ def SARIsent(ssent, csent, rsents):
     r2gramslist = []
     r3gramslist = []
     r4gramslist = []
+    
     for rsent in rsents:
         r1grams = rsent.lower().split(" ")
         r2grams = []
@@ -156,7 +122,7 @@ def SARIsent(ssent, csent, rsents):
         r2gramslist.append(r2grams)
         r3gramslist.append(r3grams)
         r4gramslist.append(r4grams)
-
+    
     for i in range(0, len(s1grams) - 1):
         if i < len(s1grams) - 1:
             s2gram = s1grams[i] + " " + s1grams[i + 1]
@@ -180,44 +146,13 @@ def SARIsent(ssent, csent, rsents):
             c4grams.append(c4gram)
 
     (keep1score, del1score, add1score) = SARIngram(s1grams, c1grams, r1gramslist, numref)
-    '''
-    print("UNIGRAM SCORES:")
-    print(keep1score)
-    print(del1score)
-    print(add1score)
-    '''
     (keep2score, del2score, add2score) = SARIngram(s2grams, c2grams, r2gramslist, numref)
-    '''
-    print("BIGRAM SCORES:")
-    print(keep2score)
-    print(del2score)
-    print(add2score)
-    '''
     (keep3score, del3score, add3score) = SARIngram(s3grams, c3grams, r3gramslist, numref)
-    '''
-    print("TRIGRAM SCORES:")
-    print(keep3score)
-    print(del3score)
-    print(add3score)
-    '''
     (keep4score, del4score, add4score) = SARIngram(s4grams, c4grams, r4gramslist, numref)
-    '''
-    print("4-gram SCORES:")
-    print(keep4score)
-    print(del4score)
-    print(add4score)
-    '''
-    avgkeepscore = sum([keep1score,keep2score,keep3score,keep4score])/4
+    avgkeepscore = sum([keep1score, keep2score, keep3score, keep4score]) / 4
     avgdelscore = sum([del1score, del2score, del3score, del4score]) / 4
     avgaddscore = sum([add1score, add2score, add3score, add4score]) / 4
     finalscore = (avgkeepscore + avgdelscore + avgaddscore) / 3
-    '''
-    print("FINAL SCORES:")
-    print(avgkeepscore)
-    print(avgdelscore)
-    print(avgaddscore)
-    print(finalscore)
-    '''
 
     return finalscore
 
@@ -240,7 +175,6 @@ def main():
     sari_scores = list()
     for i in range(len(simplified_sentences)):
         sari_scores.append(SARIsent(complex_sentences[i], simplified_sentences[i], [reference_sentences[i]]))
-        ##print("\n\n")
 
     sari_scores = np.array(sari_scores)
     print('SARI score: {}'.format(np.mean(sari_scores)))
