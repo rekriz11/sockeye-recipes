@@ -1,3 +1,18 @@
+# Simplification Fork
+
+This fork contains the code we use in the paper, Complexity-Weighted Loss and Diverse Reranking for Sentence Simplification, found [here](https://arxiv.org/pdf/1904.02767.pdf). Please cite the following paper, along with Sockeye:
+
+```
+@inproceedings{kriz2019complexity,
+  title={Complexity-Weighted Loss and Diverse Reranking for Sentence Simplification},
+  author={Reno Kriz and Jo{\~a}o Sedoc and Marianna Apidianaki and Carolina Zheng and Gaurav Kumar and Eleni Miltsakaki and Chris Callison-Burch},
+  journal={Proceedings of the 2019 Conference of the North American Chapter of the Association for Computational Linguistics (NAACL 2019)},
+  year={2019}
+}
+```
+
+Our updates to the sockeye-recipes can be found in sockeye-recipes/egs/pretrained_embeddings/. Other additional scripts can be found in sockeye-recipes/new_scripts.
+
 # sockeye-recipes
 
 Training scripts and recipes for the Sockeye Neural Machine Translation (NMT) toolkit
