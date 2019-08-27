@@ -13,6 +13,8 @@ This fork contains the code we use in the paper, Complexity-Weighted Loss and Di
 
 Our updates to the sockeye-recipes can be found in sockeye-recipes/egs/pretrained_embeddings/. Other additional scripts can be found in sockeye-recipes/new_scripts.
 
+The outputs of our baseline models, models for our ablation study, and our final best model can be found in sockeye-recipes/outputs/.
+
 # sockeye-recipes
 
 Training scripts and recipes for the Sockeye Neural Machine Translation (NMT) toolkit
