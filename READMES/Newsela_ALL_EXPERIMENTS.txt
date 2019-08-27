@@ -3,6 +3,29 @@
 ## USING MODELS TRAINED ON NEWSELA-V1
 #############################################
 
+#### 0. BASELINES
+
+python ~/sockeye-recipes/SARI/sari_old.py \
+-c /data2/text_simplification/output/newsela_complex.REFERENCE \
+-r /data2/text_simplification/output/newsela_simple.REFERENCE \
+-s /data2/text_simplification/output/newsela_simple.REFERENCE
+
+## Calculate SARI score
+python ~/sockeye-recipes/SARI/sari_old.py \
+-c /data2/text_simplification/output/newsela_complex.REFERENCE \
+-r /data2/text_simplification/output/newsela_simple.REFERENCE \
+-s /data2/text_simplification/output/hybrid.BASELINE
+
+python ~/sockeye-recipes/SARI/sari_old.py \
+-c /data2/text_simplification/output/newsela_complex.REFERENCE \
+-r /data2/text_simplification/output/newsela_simple.REFERENCE \
+-s /data2/text_simplification/output/dress-ls.BASELINE
+
+python ~/sockeye-recipes/SARI/sari_old.py \
+-c /data2/text_simplification/output/newsela_complex.REFERENCE \
+-r /data2/text_simplification/output/newsela_simple.REFERENCE \
+-s /data2/text_simplification/output/dmass.BASELINE
+
 #############################################
 ## 1. BEFORE DECODING
 #############################################

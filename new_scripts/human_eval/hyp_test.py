@@ -51,6 +51,7 @@ def hyp_test(df):
     for aspect in ASPECTS + ['avg']:
         results[aspect] = []
         s1 = df[(df['aspect'] == aspect) & (df['model'] == SYSTEMS[OUR_MODEL_INDEX])]
+        print(s1['score'])
         for model in SYSTEMS:
             s2 = df[(df['aspect'] == aspect) & (df['model'] == model)]
             results[aspect].append((st.ttest_ind(s1['score'], s2['score']),
