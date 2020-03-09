@@ -6,7 +6,7 @@
 #cp /data2/text_simplification/dataset/test/* /data2/text_simplification/dataset/train/* /data2/text_simplification/dataset/valid/* data/newsela_Zhang_Lapata_splits
 #cp /data1/embeddings/eng/glove.6B.300d.txt data/emb/glove.6B.300d.txt
 
-hyperparam_file=anon_glove_loss_TEST.hpm
+hyperparam_file=anon_glove_loss.hpm
 source $hyperparam_file
 echo "1. Get rootdir from hyperparam file: $rootdir"
 
